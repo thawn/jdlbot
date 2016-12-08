@@ -6,6 +6,9 @@ use warnings;
 
 use File::Copy;
 use File::Find;
+use File::Path qw(make_path);
+use Path::Class;
+
 require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT = qw(loadTemplates loadStatic loadAssets checkConfigFile openBrowser);
@@ -27,22 +30,25 @@ sub loadTemplates {
 
 sub loadAssets {
 	my %assets = ();
-	find(sub {
-		my $content = loadFile($_) if -f;
+	my $manifest = PAR::read_file('assets.list');
+	open my $fh, '<', \$manifest;
+	while(my $path = <$fh>) {
+		chomp $path;
+		my $content = loadFile($path);
 		my $mime;
-		if ( $_ =~ /.js$/ ) {
+		if ( $path =~ /.js$/ ) {
 			$mime = 'text/javascript';
-		} elsif ( $_ =~ /.css$/ ) {
+		} elsif ( $path =~ /.css$/ ) {
 			$mime = 'text/css';
 		} else {
 			$mime = '';
 		}
-		$assets{"/".$File::Find::name} = sub {
+		$assets{"/".$path} = sub {
 		my ($httpd, $req) = @_;
 
 		$req->respond({ content => [$mime, $content] });
 		}
-	}, 'assets/');
+	}
 	
 	
 	return %assets;

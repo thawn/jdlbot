@@ -68,7 +68,7 @@ my($dbh, %config, $watchers, %templates, $static, %assets);
 		chdir($directory);
 	}
 
-	my @build_imports = qw(%templates $static loadSupportFiles checkConfigFile openBrowser);
+	my @build_imports = qw(loadTemplates loadStatic loadAssets checkConfigFile openBrowser);
 	if( PAR::read_file('build.txt') ){
 		if( $^O eq 'darwin' ) {
 			require JdlBot::Build::Mac; 
@@ -194,7 +194,7 @@ my $httpd = AnyEvent::HTTPD->new (host => $config{'host'}, port => $config{'port
 	print STDERR "Server running on port: $config{'port'}\n" .
 	"Open http://127.0.0.1:$config{'port'}/ in your favorite web browser to continue.\n\n";
 	
-	if( $config{'open_browser'} eq 'TRUE' ){openBrowser();}
+	if( $config{'open_browser'} eq 'TRUE' ){openBrowser(%config);}
 
 $httpd->reg_cb (
 	'/' => sub {

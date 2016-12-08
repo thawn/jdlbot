@@ -1,4 +1,4 @@
-#!perl
+#!/usr/bin/env perl
 
 
 # Building with pp does NOT WORK with perl v5.10.0
@@ -21,6 +21,9 @@ my $path_sep = '\/';
 
 print "Copying source files into build/current\n\n";
 
+my $assetsList = (file($copyTo,'assets.list'))->stringify;
+$filesToAdd .= " -a assets.list";
+open (my $assetsListHandle, '>', $assetsList) or die "Could not open file '$assetsList' $!";
 find( { wanted => sub {
 	if( $_ !~ /^\./ ){
 		if( -f (file($copyFrom , $File::Find::name))->stringify ){
@@ -29,6 +32,9 @@ find( { wanted => sub {
 			print "$toName\n";
 			rcopy( (file($copyFrom , $File::Find::name))->stringify , (file($copyTo , $toName))->stringify );
 			$filesToAdd .= " -a $toName";
+			if ($toName =~ /^assets/) {
+				print $assetsListHandle "$toName\n"
+			}
 		}
 	}
 } , no_chdir => 0 }, 'src');

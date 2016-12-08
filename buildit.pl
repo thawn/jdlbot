@@ -51,12 +51,18 @@ print $fh $assetsList;
 close($fh);
 
 if ( $^O =~ /MSWin/ ){
+	use Win32::Exe;
 	print "\nWindows build.\n\n";
 	
 	copy((file('build', 'win', 'jdlbot.ico'))->stringify, (file($builddir, 'jdlbot.ico'))->stringify);
 	
 	chdir($builddir);
-	my $result = `pp -M attributes -l LibXML $filesToAdd $modulesToAdd --icon jdlbot.ico -o jdlbotServer.exe jdlbotServer.pl`;
+	my $result = `pp -M attributes -M UNIVERSAL $filesToAdd $modulesToAdd -o jdlbotServer.exe jdlbotServer.pl`;
+	
+	# newer versions of pp don't support the --icon option any more, use Win32::Exe to manually replace the icon:
+#	$exe = Win32::Exe->new('jdlbotServer.exe');
+#	$exe->set_single_group_icon('jdlbot.ico');
+#	$exe->write;
 	
 	print $result;
 	if ( $? != 0 ){ die "Build failed.\n"; }

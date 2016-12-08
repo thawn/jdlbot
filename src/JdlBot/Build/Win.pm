@@ -33,7 +33,7 @@ sub loadAssets {
 	my $manifest = PAR::read_file('assets.list');
 	open my $fh, '<', \$manifest;
 	while(my $path = <$fh>) {
-		chomp $path;
+		$path =~ s/\R//g;
 		my $content = loadFile($path);
 		my $mime;
 		if ( $path =~ /.js$/ ) {
@@ -84,7 +84,8 @@ sub checkConfigFile {
 }
 
 sub openBrowser {
-	`start http://127.0.0.1:$main::config{'port'}/`;
+	my %config = @_;
+	`start http://127.0.0.1:$config{'port'}/`;
 	return 1;
 }
 

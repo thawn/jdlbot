@@ -21,9 +21,9 @@ my $path_sep = '\/';
 
 print "Copying source files into build/current\n\n";
 
-my $assetsList = (file($copyTo,'assets.list'))->stringify;
+my $assetsList = "";
 $filesToAdd .= " -a assets.list";
-open (my $assetsListHandle, '>', $assetsList) or die "Could not open file '$assetsList' $!";
+
 find( { wanted => sub {
 	if( $_ !~ /^\./ ){
 		if( -f (file($copyFrom , $File::Find::name))->stringify ){
@@ -33,7 +33,7 @@ find( { wanted => sub {
 			rcopy( (file($copyFrom , $File::Find::name))->stringify , (file($copyTo , $toName))->stringify );
 			$filesToAdd .= " -a $toName";
 			if ($toName =~ /^assets/) {
-				print $assetsListHandle "$toName\n"
+				$assetsList .= "$toName\n"
 			}
 		}
 	}
@@ -43,6 +43,12 @@ my $builddir = (dir('build', 'current'))->stringify;
 if ( ! -d $builddir ){
 	make_path($builddir);
 }
+
+my $assetsListFile = (file($copyTo,'assets.list'))->stringify;
+
+open (my $fh, '>', $assetsListFile) or die "Could not open file '$assetsList' $!";
+print $fh $assetsList;
+close($fh);
 
 if ( $^O =~ /MSWin/ ){
 	print "\nWindows build.\n\n";

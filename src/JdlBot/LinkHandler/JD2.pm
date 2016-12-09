@@ -7,6 +7,7 @@ use warnings;
 use LWP::Simple qw($ua get);
 use URI::Escape;
 use Data::Dumper;
+use Log::Message::Simple qw(msg error);
 
 use JdlBot::UA;
 
@@ -45,7 +46,7 @@ sub processLinks {
 			[ 'source' => 'http://localhost/', 'urls' => $newlinks ] );
 	}
 	if ( $response->is_success  ){
-		print STDERR " success.\n";
+		msg("... success.",1);
 		if ( $filter->{'stop_found'} eq 'TRUE' ) {
 			$filter->{'enabled'} = 'FALSE';
 			my $qh =
@@ -54,7 +55,7 @@ sub processLinks {
 		}
 		return 1;
 	} else {
-		print STDERR " failed.\n";
+		error("... failed.",1);
 		return 0;
 	}
 }

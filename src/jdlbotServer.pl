@@ -25,6 +25,7 @@ use Getopt::Long;
 use Perl::Version;
 use DBI;
 use DBIx::MultiStatementDo;
+use Log::Message::Simple qw(msg error);
 
 use JdlBot::Feed;
 use JdlBot::UA;
@@ -60,7 +61,7 @@ my($dbh, %config, $watchers, %templates, $static, %assets);
 			   "version" => \$versionFlag); # Get the version number
 	
 	if( $versionFlag ){
-		print STDERR "jDlBot! version $version\n";
+		print STDOUT "jDlBot! version $version\n";
 		exit(0);
 	}
 	
@@ -93,12 +94,12 @@ my($dbh, %config, $watchers, %templates, $static, %assets);
 	#if (! $config{'version'}){ $config{'version'} = "0.1.0"; }
 	my $dbVersion = Perl::Version->new($config{'version'});
 	if ( $version->numify > $dbVersion->numify ){
-		print STDERR "Updating config...\n";
+		print STDOUT "Updating config...\n";
 
 		require JdlBot::DbUpdate;
 		JdlBot::DbUpdate::update($dbVersion, $dbh);
 
-		print STDERR "Update successful.\n";
+		print STDOUT "Update successful.\n";
 		%config = fetchConfig();
 	}
 
@@ -133,7 +134,7 @@ sub addWatcher {
 										after		=>	5,
 										interval	=>	$interval * 60,
 										cb			=>	sub {
-											print STDERR "Running watcher: " . $url . "\n";
+											msg("Running watcher: " . $url, 1);
 
 											my $qh = $dbh->prepare(q( SELECT * FROM filters WHERE enabled='TRUE' AND feeds LIKE ? ));
 											$qh->execute('%"' . $url . '"%');
@@ -146,8 +147,8 @@ sub addWatcher {
 													if ($hdr->{Status} =~ /^2/) {
 														JdlBot::Feed::scrape($url, $body, $filters, $follow_links, $dbh, \%config);
 													} else {
-														print STDERR "HTTP error, $hdr->{Status} $hdr->{Reason}\n" .
-																	"\tFailed to retrieve feed: $url\n";
+														error("HTTP error, $hdr->{Status} $hdr->{Reason}\n" .
+																	"\tFailed to retrieve feed: $url", 1);
 													}
 												});
 										});
@@ -201,8 +202,8 @@ my %siteMapOrder = (
 );
 
 my $httpd = AnyEvent::HTTPD->new (host => $config{'host'}, port => $config{'port'});
-	print STDERR "Server running on port: $config{'port'}\n" .
-	"Open http://127.0.0.1:$config{'port'}/ in your favorite web browser to continue.\n\n";
+	msg("Server running on port: $config{'port'}\n" .
+	"Open http://127.0.0.1:$config{'port'}/ in your favorite web browser to continue.\n",1);
 	
 	if( $config{'open_browser'} eq 'TRUE' ){openBrowser(%config);}
 
@@ -543,7 +544,22 @@ $httpd->reg_cb (
 		my ($httpd, $req) = @_;
 		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{'/help'}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'help.html'}}) ]});
 
-	},	
+	},
+	'/log' => sub{
+		my ($httpd, $req) = @_;
+		if( $req->method() eq 'GET' ){
+			$req->respond ({ content => ['text/html', Log::Message::Simple->stack_as_string() ]});
+		} elsif ( $req->method() eq 'POST' ){
+			my $return = {'status' => 'failure'};
+			if( $req->parm('action') =~ /^(delete)$/ ){
+				Log::Message::Simple->flush();
+				msg("Log cleared.\n",1);
+				$return->{'status'} = 'Success.';
+			}
+			$return = encode_json($return);
+			$req->respond ({ content => ['application/json',  $return ]});
+		}
+	},
 	%assets
 );
 

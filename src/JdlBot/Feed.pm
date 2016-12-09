@@ -10,6 +10,7 @@ use XML::FeedPP;
 use Error qw(:try);
 use AnyEvent::HTTP;
 use List::MoreUtils qw(uniq);
+use Log::Message::Simple qw(msg error);
 
 use JdlBot::UA;
 use JdlBot::TV;
@@ -27,7 +28,7 @@ sub scrape {
 		$parseError = 1;
 	};
 	
-	if ( $parseError ){ print STDERR "Error parsing Feed: " . $url . "\n"; return; }
+	if ( $parseError ){ error("Error parsing Feed: " . $url,1); return; }
 	
 	foreach my $item ( $rss->get_item() ){
 		
@@ -89,8 +90,8 @@ sub scrape {
 									push(@{$filters->{$filter}->{'matches'}}, $body);
 								}
 							} else {
-							   print STDERR "HTTP error, $hdr->{Status} $hdr->{Reason}\n" .
-											"\tFailed to follow link: " . $item->link() . " for feed: $url\n";
+							   error("HTTP error, $hdr->{Status} $hdr->{Reason}\n" .
+											"\tFailed to follow link: " . $item->link() . " for feed: $url",1);
 							}
 							$filters->{$filter}->{'outstanding'} -= 1;
 							$return_outstanding->();
@@ -154,7 +155,7 @@ sub findLinks {
 						}
 					}
 					# Status message?
-					print STDERR "Sending links for filter: " . $filter->{'title'} . " ...";
+					msg("Sending links for filter: " . $filter->{'title'} . " ...",1);
 					if (JdlBot::LinkHandler::JD2::processLinks($linksToProcess, $filter, $dbh, $config)){
 						my $qh = $dbh->prepare('UPDATE filters SET tv_last=? WHERE title=?');
 						$qh->execute($filter->{'new_tv_last'}->[0], $filter->{'title'});
@@ -165,7 +166,7 @@ sub findLinks {
 					}
 					#sendToJd($linksToProcess, $filter);
 				} else {
-					print STDERR "Sending links for filter: " . $filter->{'title'} . " ...";
+					msg("Sending links for filter: " . $filter->{'title'} . " ...",1);
 					if(JdlBot::LinkHandler::JD2::processLinks($linksToProcess, $filter, $dbh, $config)){
 						return;
 					} else {

@@ -3,6 +3,17 @@ var check_update = { $check_update };
 var version = "{ $version }";
 version = [ /([0-9]\{1,\})\.([0-9]\{1,\})\.([0-9]\{1,\})/.exec(version), version ];
 
+var refreshLog = function() \{
+	$.get('/log', function(data) \{
+		$('#log').html(data);
+	\});
+\}
+
+var continuousRefresh = function() \{
+	refreshLog();
+	setTimeout(continuousRefresh, 10000);
+\}
+
 $(document).ready(function()\{
 	if ( check_update )\{
 		$('#check_update').html("<h3>Checking for updates...</h3>");
@@ -40,6 +51,18 @@ $(document).ready(function()\{
 					\}
 				  \});
 	\}
+	
+	$('#refresh_log').click(function() \{
+		refreshLog();
+	\});
+	
+	$('#clear_log').click(function() \{
+		$.post('/log','action=delete').always(function() \{
+			refreshLog();
+		\});
+	\});
+
+	continuousRefresh();
 \});
 
 </script>
@@ -52,4 +75,14 @@ $(document).ready(function()\{
 }}
 
 <p id="check_update"></p>
+
+<h2>Log output:</h2>
+
+<p>
+	<button id="refresh_log" class="btn btn-info">Refresh Log</button>
+	<button id="clear_log" class="btn btn-danger">Clear Log</button>
+</p>
+
+<pre id="log"></pre>
+
 

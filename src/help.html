@@ -1,0 +1,41 @@
+<h2>Getting Started</h2>
+
+<div class="row">
+	<div class="col-sm-4">
+		<h3>1. Add RSS Feeds</h3>
+		<p>
+			Add one or more RSS feeds on the <a href="/feeds">"Feeds" page</a>. For example:
+		</p>
+		<pre>example.com/feed</pre>
+		<p>These RSS feeds will be scanned periodically for updates.</p>
+	</div>
+	<div class="col-sm-4">
+		<h3>2. Add Link Types</h3>
+		<p>
+			Any link that is not in the <a href="linktypes">list of "Link Types"</a> will be
+			ignored. Therefore you should make sure that the type of links you would like to
+			add is in there. For example: Assuming the RSS feed gives you links like:
+		</p>
+		<pre>http://example.com/example_movie_download.rar</pre>
+		<p>This means you would need to add:</p>
+		<pre>example.com</pre>
+		<p>to the list of link types.</p>
+	</div>
+	<div class="col-sm-4">
+		<h3>3. Add Filters</h3>
+		<p>
+			Add <a href="/filters">"Filters"</a> that match the title of the RSS entries. Lets
+			say the title is:
+		</p>
+		<pre>Great Example Movie that has 720p resolution and DTS audio and other useless info</pre>
+		<p>Then an appropriate filter could look like this (regex enabled):</p>
+		<pre>Example Movie.*(720|1080).*(DTS|AC3)</pre>
+		<p>
+			See <a
+				href="http://www.enginsite.com/Library-Perl-Regular-Expressions-Tutorial.htm">this
+				tutorial</a> for more details on how regular expressions work in perl.
+		</p>
+		
+		<p>If you often use very similar filters, you can set up template filters in the "Filter configuration" on the "Filters" page.</p>
+	</div>
+</div>

@@ -170,13 +170,13 @@ sub removeWatcher {
 }
 
 sub getNavigation {
-	my ($url, %siteMap) = @_;
+	my ($url, $siteMap, $siteMapOrder) = @_;
 	my $nav = "";
-	foreach my $path (sort keys %siteMap) {
+	foreach my $path (sort { $siteMapOrder->{$a} <=> $siteMapOrder->{$b} } keys %$siteMap) {
 		if( $url eq $path ) {
-			$nav .= "<li class='active'><a href='$path'>$siteMap{$path}</a></li>";
+			$nav .= "<li class='active'><a href='$path'>$siteMap->{$path}</a></li>";
 		} else {
-			$nav .= "<li><a href='$path'>$siteMap{$path}</a></li>";
+			$nav .= "<li><a href='$path'>$siteMap->{$path}</a></li>";
 		}
 	}
 	return $nav;
@@ -184,10 +184,20 @@ sub getNavigation {
 
 my %siteMap = (
 	'/' =>'Status',
-	'/config' => 'Configuration',
+	'/config' => '<span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Configuration',
 	'/feeds' => 'Feeds',
 	'/linktypes' => 'Link Types',
 	'/filters' => 'Filters',
+	'/help' => 'Help',
+);
+
+my %siteMapOrder = (
+	'/' => 0,
+	'/feeds' => 1,
+	'/linktypes' => 2,
+	'/filters' => 3,
+	'/config' => 4,
+	'/help' => 5,
 );
 
 my $httpd = AnyEvent::HTTPD->new (host => $config{'host'}, port => $config{'port'});
@@ -215,7 +225,7 @@ $httpd->reg_cb (
 																'check_update' => $config{'check_update'} eq 'TRUE' ? 'true' : 'false',
 																'status' => $status
 																});
-		my $navHtml = getNavigation($req->url,%siteMap);
+		my $navHtml = getNavigation($req->url,\%siteMap, \%siteMapOrder);
 
 		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => 'Status', 'navigation' => $navHtml, 'content' => $statusHtml}) ]});
 	},
@@ -231,7 +241,7 @@ $httpd->reg_cb (
 																'check_update' => $config{'check_update'} eq 'TRUE' ? 'checked="checked"' : '',
 																'open_browser' => $config{'open_browser'} eq 'TRUE' ? 'checked="checked"' : ''
 																});
-		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{'/config'}, 'navigation' => getNavigation($req->url,%siteMap), 'content' => $configHtml}) ]});
+		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{'/config'}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $configHtml}) ]});
 		} elsif ( $req->method() eq 'POST' ){
 			if( $req->parm('action') eq 'update' ){
 				my $configParams = decode_json(uri_unescape($req->parm('data')));
@@ -257,7 +267,7 @@ $httpd->reg_cb (
 		my ($httpd, $req) = @_;
 		if( $req->method() eq 'GET' ){
 		
-		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{'/feeds'}, 'navigation' => getNavigation($req->url,%siteMap), 'content' => $static->{'feeds.html'}}) ]});
+		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{'/feeds'}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'feeds.html'}}) ]});
 		} elsif ( $req->method() eq 'POST' ){
 			my $return = {'status' => 'failure'};
 			if( $req->parm('action') =~ /add|update|enable/){
@@ -396,7 +406,7 @@ $httpd->reg_cb (
 		my ($httpd, $req) = @_;
 		if( $req->method() eq 'GET' ){
 
-		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{'/linktypes'}, 'navigation' => getNavigation($req->url,%siteMap), 'content' => $static->{'linktypes.html'}}) ]});
+		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{'/linktypes'}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'linktypes.html'}}) ]});
 
 		} elsif ( $req->method() eq 'POST' ){
 			my $return = {'status' => 'failure'};
@@ -457,7 +467,7 @@ $httpd->reg_cb (
 		my ($httpd, $req) = @_;
 		if( $req->method() eq 'GET' ){
 
-		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{'/filters'}, 'navigation' => getNavigation($req->url,%siteMap), 'content' => $static->{'filters.html'}}) ]});
+		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{'/filters'}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'filters.html'}}) ]});
 
 		} elsif ( $req->method() eq 'POST' ){
 			my $return = {'status' => 'failure'};
@@ -529,6 +539,11 @@ $httpd->reg_cb (
 			$req->respond ({ content => ['application/json',  $return ]});
 		}
 	},
+	'/help' => sub{
+		my ($httpd, $req) = @_;
+		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{'/help'}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'help.html'}}) ]});
+
+	},	
 	%assets
 );
 

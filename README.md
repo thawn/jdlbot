@@ -62,3 +62,10 @@ If you have problems, please check the [wiki](http://github.com/jdlbot/jdlbot/wi
 *   Implement some kind of history tracking
 *   Implement retry on failed or offline link
 *   Suggest something!
+
+## Build instructions
+
+If you want to build from source, you need to install these additional modules:
+`cpan pp File::Copy::Recursive`
+then run `perl buildit.pl`
+enjoy.

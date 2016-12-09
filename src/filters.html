@@ -169,7 +169,7 @@
 						function(data) {
 							if (data.status === 'Success.') {
 								for ( var i in data.feeds) {
-									var feed = '<li><input type="checkbox" value="' + data.feeds[i].url + '" /> '
+									var feed = '<li><input type="checkbox" value="' + data.feeds[i].url + '"> '
 											+ data.feeds[i].url + '</li>';
 									$('ul.feed_list').append(feed);
 								}
@@ -406,7 +406,10 @@
 			getConfig();
 
 			// Grab the list of feeds, then grab the list of filters.
-			listFeeds(listFilters);
+			listFeeds(function(){
+				listFilters();
+				$('#new-filter-form').find('ul.feed_list').find('input[type=checkbox]').prop('checked', true);
+			});
 		});
 </script>
 <div class="row" id="filters">

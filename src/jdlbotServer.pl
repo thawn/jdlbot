@@ -346,8 +346,8 @@ $httpd->reg_cb (
 							unless ( $feedParams->{'enabled'} eq 'FALSE' ){
 								addWatcher($feedParams->{'url'}, $feedParams->{'interval'}, $feedParams->{'follow_links'});
 							}
-							$feedParams->{'status'} = 'Success.';
-							$return = $feedParams;						
+							$return->{'status'} = 'Success.';
+							$return->{'element'} = $feedParams;						
 						} else {
 							$return->{'status'} = "Could not save feed data, possibly a duplicate feed?";
 						}
@@ -385,8 +385,8 @@ $httpd->reg_cb (
 					
 				if(!$qh->errstr){
 					removeWatcher($feedParams->{'url'});
-					$feedParams->{'status'} = 'Success.';
-					$return = $feedParams;						
+					$return->{'status'} = 'Success.';
+					$return->{'element'} = $feedParams;						
 				}
 			} elsif ( $req->parm('action') eq 'list' ) {
 				$return->{'status'} = "Could not get list of feeds, possible database error.";
@@ -394,7 +394,7 @@ $httpd->reg_cb (
 				# Hashref fucks up the sorting
 				my $count = 0;
 				foreach my $key ( sort keys %{$feeds} ){
-					$return->{'feeds'}[$count] = $feeds->{$key};
+					$return->{'list'}[$count] = $feeds->{$key};
 					$count++;
 				}
 
@@ -420,7 +420,7 @@ $httpd->reg_cb (
 				if ( $req->parm('action') eq 'list' ){
 					$return->{'status'} = "Could not fetch list of Link Types.";
 
-					$return->{'linktypes'} = $dbh->selectall_arrayref(q( SELECT * FROM linktypes ORDER BY priority ), { Slice => {} });
+					$return->{'list'} = $dbh->selectall_arrayref(q( SELECT * FROM linktypes ORDER BY priority ), { Slice => {} });
 				} elsif ( $req->parm('action') eq 'update' ){
 					my $linktypeParams = decode_json(uri_unescape($req->parm('data')));
 					$return->{'status'} = "Could not update list of Link Types.";
@@ -439,7 +439,7 @@ $httpd->reg_cb (
 					$return->{'status'} = "Could not delete Link Type.";
 
 					$qh = $dbh->prepare('DELETE FROM linktypes WHERE linkhost=?');
-					$qh->execute($linktypeParams->{'linkhost'});
+					$qh->execute($linktypeParams->{'uid'});
 
 				} elsif ( $req->parm('action') eq 'add' ){
 					my $linktypeParams = decode_json(uri_unescape($req->parm('data')));
@@ -452,7 +452,7 @@ $httpd->reg_cb (
 					if ( ! $qh->errstr ){
 						$qh = $dbh->prepare('SELECT * FROM linktypes WHERE linkhost=?');
 						$qh->execute($linktypeParams->{'linkhost'});
-						$return->{'linktype'} = $qh->fetchrow_hashref();
+						$return->{'element'} = $qh->fetchrow_hashref();
 					}
 				}
 
@@ -475,7 +475,7 @@ $httpd->reg_cb (
 
 		} elsif ( $req->method() eq 'POST' ){
 			my $return = {'status' => 'failure'};
-			if( $req->parm('action') =~ /^(add|update|delete|list|config|getconfig)$/ ){
+			if( $req->parm('action') =~ /^(add|update|delete|config|getconfig)$/ ){
 				my $filterParams = decode_json($req->parm('data'));
 
 				my $qh;
@@ -488,7 +488,7 @@ $httpd->reg_cb (
 					if ( ! $qh->errstr ){
 						$qh = $dbh->prepare('SELECT * FROM filters WHERE title=?');
 						$qh->execute($filterParams->{'title'});
-						$return->{'filter'} = $qh->fetchrow_hashref();
+						$return->{'element'} = $qh->fetchrow_hashref();
 					}
 
 				} elsif ( $req->parm('action') eq 'update' ){
@@ -501,18 +501,13 @@ $httpd->reg_cb (
 					push(@values, $old_title);
 					$filterParams->{'old_title'} = $old_title;
 					$qh->execute(@values);
-					$return->{'filter'} = $filterParams;
+					$return->{'element'} = $filterParams;
 
 				} elsif ( $req->parm('action') eq 'delete' ){
 					$return->{'status'} = "Could not delete filter.  Incorrect title?";
 					$qh = $dbh->prepare('DELETE FROM filters WHERE title=?');
-					$qh->execute($filterParams->{'title'});
-					$return->{'filter'} = $filterParams;						
-
-				} elsif ( $req->parm('action') eq 'list' ){
-					$return->{'status'} = "Could not fetch list of filters.";
-
-					$return->{'filters'} = $dbh->selectall_arrayref(q( SELECT * FROM filters ORDER BY title ), { Slice => {} });
+					$qh->execute($filterParams->{'uid'});
+					$return->{'element'} = $filterParams;						
 
 				} elsif ( $req->parm('action') eq 'config' ){
 					$return->{'status'} = "Could not save configuration data.";
@@ -524,7 +519,7 @@ $httpd->reg_cb (
 					push(@values, $old_conf);
 					$filterParams->{'old_conf'} = $old_conf;
 					$qh->execute(@values);
-					$return->{'filter'} = $filterParams;
+					$return->{'element'} = $filterParams;
 
 				} elsif ( $req->parm('action') eq 'getconfig' ){
 					$return->{'status'} = "Could not fetch filter configuration.";
@@ -538,6 +533,14 @@ $httpd->reg_cb (
 				}
 				
 
+			} elsif ( $req->parm('action') =~ /^(list)$/ ){
+				$return->{'status'} = "Could not fetch list of filters.";
+
+				$return->{'list'} = $dbh->selectall_arrayref(q( SELECT * FROM filters ORDER BY title ), { Slice => {} });
+
+				if(!$dbh->errstr){
+					$return->{'status'} = 'Success.';
+				}
 			}
 			$return = encode_json($return);
 			$req->respond ({ content => ['application/json',  $return ]});
@@ -552,7 +555,7 @@ $httpd->reg_cb (
 			if( $req->parm('action') =~ /^(list|redownload|clear)$/ ){
 				
 				if ( $req->parm('action') eq 'list' ){
-					$return->{'history'} = JdlBot::DownloadHistory::listEntries();
+					$return->{'list'} = JdlBot::DownloadHistory::listEntries();
 					$return->{'status'} = 'Success.';
 					
 				} elsif ( $req->parm('action') eq 'redownload' ) {

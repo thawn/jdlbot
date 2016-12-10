@@ -1,21 +1,4 @@
 <script type="text/javascript">
-var addLinktype = function(){
-	var $id = $('#new-linktype-form');
-	var linktypeVars = getLinktypeValues($id);
-	
-	$.post('/linktypes',
-		  'action=add&data=' + escape(JSON.stringify(linktypeVars)),
-		  function(data){
-				if(data.status === 'Success.'){
-					insertLinktype(data.linktype);
-					updateLinktypes()
-					notify($('#add'), '', data.status, 'bg-success', 2000);
-				} else {
-					notify($('#add'), '', data.status, 'bg-danger', 4000);
-				}
-		  }, 'json');
-}
-
 var updateLinktypes = function(){
 	var linktypeVars = getAllLinktypeValues();
 	
@@ -23,34 +6,16 @@ var updateLinktypes = function(){
 			'action=update&data=' + escape(JSON.stringify(linktypeVars)),
 		  function(data){
 				if(data.status === 'Success.'){
-					listLinktypes();
+					listElements(true);
 				} else {
 					notify($('#update-linktypes'), '', data.status, 'bg-danger', 4000);
 				}
-		  }, 'json');
+		  }, 'json').fail(function() {
+		  	notify($('#update-linktypes'), '', 'Connection error!', 'bg-danger', 4000);
+			});
 }
 
-var deleteLinktype = function($id){
-	var linktypeVars = {
-					  'linkhost' : $id.find('input[name=linkhost]').val()
-					  };
-	$.post('/linktypes',
-		   'action=delete&data=' + escape(JSON.stringify(linktypeVars)),
-		function(data){
-			if (data.status === 'Success.') {
-				var alert = "<tr id=\"dismiss\"><td colspan=\"3\"><div class=\"alert alert-success\" role=\"alert\">Deleted.</div></td></tr>";
-				$id.replaceWith(alert);
-				setTimeout(function() {
-					$('#dismiss').remove()
-				}, 2000);
-			} else {
-				notify($id.find('button.delete'), '', data.status, 'bg-danger', 4000);
-			}
-		}, 'json');
-}
-
-
-var getLinktypeValues = function($id){
+var getElementValues = function($id){
 	var linktypeVars = {};
 	
 	$id.find('input').not(':button').each(function(){
@@ -67,62 +32,17 @@ var getLinktypeValues = function($id){
 var getAllLinktypeValues = function(){
 	var linktypesVars = [];
 
-	for ( var i = 0; i != linktypeCount; i++ ){
-		linktypesVars.push(getLinktypeValues($('#l' + i)));
+	for ( var i = 0; i != elementCount; i++ ){
+		linktypesVars.push(getElementValues($('#el' + i)));
 	}
 	
 	return linktypesVars;
 }
 
 
-var linktypeCount = 0;
+var elementCount = 0;
 
-var listLinktypes = function(callback){
-	$.post('/linktypes',
-	   'action=list',
-	   function(data){
-		if(data.status === 'Success.'){
-			for ( var i = 0; i < linktypeCount; i++ ){
-				$('#l' + i).remove();
-			}
-			linktypeCount = 0;
-			
-			for ( var i in data.linktypes ){
-				insertLinktype(data.linktypes[i]);
-			}
-
-			if ( callback ){
-				callback();
-			}
-
-		} else {
-			var alert = "<tr><td colspan=\"4\"><div class=\"alert alert-danger alert-dismissible\" role=\"alert\"><button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button>"
-				+ data.status + "</div></td></tr>";
-			$('#linktype-list tbody').append(alert);
-		}
-	   },
-	   'json');
-}
-
-var insertLinktype = function(data){
-	var id = 'l' + linktypeCount;
-
-	var newLinktype = document.getElementById('linktype-template').cloneNode(true);
-	newLinktype.id = id;
-	newLinktype.style.display = 'none';
-
-	$('#linktype-list tbody').append(newLinktype);
-	linktypeCount++;
-	
-	$id = $(newLinktype);
-	fillInLinktype($id, data);
-
-	$id.slideDown(400)
-	
-	return id;
-}
-
-var fillInLinktype = function($id, data){
+var fillInElement = function($id, data){
 	for (var i in data){
 		if (data[i] === 'TRUE' || data[i] === 'FALSE'){
 			if (data[i] === 'TRUE'){ $id.find('input[name=' + i + ']').attr('checked', true); }
@@ -136,20 +56,24 @@ var fillInLinktype = function($id, data){
 }
 
 $(document).ready(function(){
-	listLinktypes();
+	listElements(true);
 	
 	$('[data-toggle="tooltip"]').tooltip();
 
 	$('#add').click( function(){
-			addLinktype();
+			addElement();
+			updateLinktypes();
 		});
 	$('#update-linktypes').click( function(){
 			updateLinktypes();
 		});
-	$('#linktype-list').on('click', 'button.delete', function(){
-			deleteLinktype($(this).data('item-id'));
+	$('#element-list').on('click', 'button.delete', function(){
+			deleteElement($(this).data('item-id'),$(this).data('item-id').find('input[name=linkhost]').val());
 		});
-	$('#linktype-list').on('keyup', ':input[name=priority]', function(){
+	$('#element-list').on('click', ':input[name=enabled]', function(){
+			updateLinktypes();
+	});
+	$('#element-list').on('keyup', ':input[name=priority]', function(){
 			$(this).val($(this).val().replace(/[^0-9]/g, ''));
 		});
 });
@@ -158,7 +82,7 @@ $(document).ready(function(){
 	<div class="col-sm-8">
 		<div class="panel panel-default">
 			<div class="panel-body">
-				<table id="linktype-list" class="table table-striped">
+				<table id="element-list" class="table table-striped">
 					<thead>
 						<tr>
 							<th style="width: 25px;">Enable</th>
@@ -178,7 +102,7 @@ $(document).ready(function(){
 	<div class="col-sm-4">
 		<div class="panel panel-default">
 			<div class="panel-heading"><h4 class="panel-title">Add a new link type:</h4></div>
-			<div id="new-linktype-form" class="panel-body">
+			<div id="new-element-form" class="panel-body">
 				<div class="form-group">
 					<label for="linkhost">Host/Url fragment::</label> <input type="text"
 						name="linkhost" class="form-control" data-toggle="tooltip"
@@ -198,7 +122,7 @@ $(document).ready(function(){
 	</div>
 </div>
 <table style="display: none;">
-	<tr id="linktype-template" style="display: none;">
+	<tr id="element-template" style="display: none;">
 		<td><input type="checkbox" name="enabled"></td>
 		<td class="linktype-item"><input type="text" name="linkhost"
 			class="form-control" disabled="disabled"></td>

@@ -1,45 +1,7 @@
 <script type="text/javascript">
-	var historyCount = 0;
+	var elementCount = 0;
 
-	var listHistory = function() {
-		$.post('/history','action=list').done(
-						function(data) {
-							if (data.status === 'Success.') {
-								for (var i = historyCount; i < data.history.length; i++) {
-									insertHistoryItem(data.history[i]);
-								}
-
-							} else {
-								var alert = "<tr><td colspan=\"4\"><div class=\"alert alert-danger alert-dismissible\" role=\"alert\"><button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button>"
-										+ data.status + "</div></td></tr>";
-								$('#history-list tbody').append(alert);
-							}
-						}).fail(function(data){
-								var alert = "<tr><td colspan=\"4\"><div class=\"alert alert-danger alert-dismissible\" role=\"alert\"><button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button>"
-										+ "Connection error!</div></td></tr>";
-								$('#history-list tbody').append(alert);							
-						});
-	}
-
-	var insertHistoryItem = function(data) {
-		var id = 'l' + historyCount;
-
-		var newHistoryItem = document.getElementById('history-template').cloneNode(true);
-		newHistoryItem.id = id;
-		newHistoryItem.style.display = 'none';
-
-		$('#history-list tbody').append(newHistoryItem);
-		historyCount++;
-
-		$id = $(newHistoryItem);
-		fillInHistoryItem($id, data);
-
-		$id.slideDown(400)
-
-		return id;
-	}
-
-	var fillInHistoryItem = function($id, data) {
+	var fillInElement = function($id, data) {
 		$id.find('input[name=date]').val(data.date);
 		$id.find('input[name=title]').val(data.title);
 		for (var i = 0; i < data.urls.length; i++) {
@@ -54,10 +16,10 @@
 	var clearHistory = function() {
 		$.post('/history', 'action=clear').done(function(data) {
 			if (data.status === 'Success.') {
-				for (var i = 0; i < historyCount; i++) {
-					$('#l' + i).remove();
+				for (var i = 0; i < elementCount; i++) {
+					$('#el' + i).remove();
 				}
-				historyCount = 0;
+				elementCount = 0;
 			} else {
 				notify($('#clear-history'), '', data.status, 'bg-danger', 4000);
 			}
@@ -68,7 +30,7 @@
 	}
 
 	var reDownload = function($id) {
-		var index = parseInt($id.prop('id').substring(1));
+		var index = parseInt($id.prop('id').substring(2));
 
 		$.post('/history', 'action=redownload&data=' + index).done(function(data) {
 			if (data.status === 'Success.') {
@@ -77,12 +39,12 @@
 				notify($id.find('button.re-dl'), '', data.status, 'bg-danger', 4000);
 			}
 		}).fail(function(data) {
-			notify($id.find('button.re-dl'), '', data.status, 'bg-danger', 4000);
+			notify($id.find('button.re-dl'), '', 'Connection Error.', 'bg-danger', 4000);
 		});
 	}
 
 	var continuousRefresh = function() {
-		listHistory();
+		listElements();
 		setTimeout(continuousRefresh, 10000);
 	}
 
@@ -97,12 +59,12 @@
 			clearHistory();
 		});
 		$('#refresh-history').click(function() {
-			listHistory();
+			listElements();
 		});
-		$('#history-list').on('click', 'button.details', function() {
+		$('#element-list').on('click', 'button.details', function() {
 			toggleShow($(this).data('item-id'));
 		});
-		$('#history-list').on('click', 'button.re-dl', function() {
+		$('#element-list').on('click', 'button.re-dl', function() {
 			reDownload($(this).data('item-id'));
 		});
 		continuousRefresh();
@@ -115,7 +77,7 @@
 </p>
 <div class="panel panel-default">
 	<div class="panel-body">
-		<table id="history-list" class="table table-striped">
+		<table id="element-list" class="table table-striped">
 			<thead>
 				<tr>
 					<th style="width: 250px;"">Date</th>
@@ -130,7 +92,7 @@
 	</div>
 </div>
 <table style="display: none;">
-	<tr id="history-template" class="history-item" style="display: none;">
+	<tr id="element-template" class="history-item" style="display: none;">
 		<td><input name="date" class="form-control" disabled></td>
 		<td><input name="title" class="form-control" disabled>
 			<div class="panel panel-default edit" style="display: none;">
@@ -140,7 +102,7 @@
 			</div></td>
 		<td><button type="button" class="btn btn-info details">Details</button></td>
 		<td>
-			<button type="button" class="btn btn-primary re-dl">Re-download</button>
+			<button type="button" class="btn btn-primary re-dl" data-placement="left">Re-download</button>
 		</td>
 	</tr>
 </table>

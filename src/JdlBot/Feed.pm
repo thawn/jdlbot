@@ -11,6 +11,7 @@ use Error qw(:try);
 use AnyEvent::HTTP;
 use List::MoreUtils qw(uniq);
 use Log::Message::Simple qw(msg error);
+use URI::Find;
 
 use JdlBot::UA;
 use JdlBot::TV;
@@ -119,22 +120,27 @@ sub findLinks {
 	} else {
 		$linkhosts = $dbh->selectall_arrayref("SELECT linkhost FROM linktypes WHERE enabled='TRUE' ORDER BY priority");
 	}
-	
+		
 	my $count = 0;
 	CONTENT: foreach my $content ( @{$filter->{'matches'}} ){
 		
-		# This little bit of ugliness pulls out all the links in a document
-		my @links = ( $content =~ /\b(([\w-]+:\/\/?|www[.])[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|\/)))/g );
+		my @links;
+		my $finder = URI::Find->new(sub {
+			my($uri) = shift;
+			push @links, $uri;
+		});
+		$finder->find(\$content);
+		
 		my $prevLink;
 		my $linksToProcess = [];
+		keys @{$linkhosts};
 		foreach my $linkhost ( @{$linkhosts} ){
-
 			my $regex = $linkhost->[0];
 			$regex = qr/$regex/;
+			keys @links;
 			foreach my $link (@links){
-				my ($linkType) = ( $link =~ /^http:\/\/([^\/]+)\// );
+				my ($linkType) = ( $link =~ /^https?:\/\/([^\/]+)\// );
 				if ( ! $linkType ){ next; }
-				
 				# If the link type is appropriate;
 				#   This needs to be replaced by a function that checks against a list of domains
 				if ( $linkType =~ $regex ){

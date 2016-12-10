@@ -56,10 +56,13 @@ If you have problems, please check the [wiki](http://github.com/jdlbot/jdlbot/wi
 *   Global Link Type priority list
 
     Allows you to download from your preferred hosts consistently
+    
+*		Download history allows to re-add links to jDownloader (history is only stored in memory, not saved to disk)
+
 
 ## Todo
 
-*   Implement some kind of history tracking
+*   Implement my.jdownloader api
 *   Implement retry on failed or offline link
 *   Suggest something!
 

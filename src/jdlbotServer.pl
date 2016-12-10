@@ -29,6 +29,7 @@ use Log::Message::Simple qw(msg error);
 
 use JdlBot::Feed;
 use JdlBot::UA;
+use JdlBot::DownloadHistory;
 
 # Set the UserAgent for external async requests.  Don't want to get flagged, do we?
 $AnyEvent::HTTP::USERAGENT = JdlBot::UA::getAgent();
@@ -185,10 +186,11 @@ sub getNavigation {
 
 my %siteMap = (
 	'/' =>'Status',
-	'/config' => '<span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Configuration',
 	'/feeds' => 'Feeds',
 	'/linktypes' => 'Link Types',
 	'/filters' => 'Filters',
+	'/history' => 'History',
+	'/config' => '<span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Configuration',
 	'/help' => 'Help',
 );
 
@@ -197,8 +199,9 @@ my %siteMapOrder = (
 	'/feeds' => 1,
 	'/linktypes' => 2,
 	'/filters' => 3,
-	'/config' => 4,
-	'/help' => 5,
+	'/history' => 4,
+	'/config' => 5,
+	'/help' => 6,
 );
 
 my $httpd = AnyEvent::HTTPD->new (host => $config{'host'}, port => $config{'port'});
@@ -228,7 +231,7 @@ $httpd->reg_cb (
 																});
 		my $navHtml = getNavigation($req->url,\%siteMap, \%siteMapOrder);
 
-		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => 'Status', 'navigation' => $navHtml, 'content' => $statusHtml}) ]});
+		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'navigation' => $navHtml, 'content' => $statusHtml}) ]});
 	},
 	'/config' => sub {
 		my ($httpd, $req) = @_;
@@ -242,7 +245,7 @@ $httpd->reg_cb (
 																'check_update' => $config{'check_update'} eq 'TRUE' ? 'checked="checked"' : '',
 																'open_browser' => $config{'open_browser'} eq 'TRUE' ? 'checked="checked"' : ''
 																});
-		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{'/config'}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $configHtml}) ]});
+		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $configHtml}) ]});
 		} elsif ( $req->method() eq 'POST' ){
 			if( $req->parm('action') eq 'update' ){
 				my $configParams = decode_json(uri_unescape($req->parm('data')));
@@ -268,7 +271,7 @@ $httpd->reg_cb (
 		my ($httpd, $req) = @_;
 		if( $req->method() eq 'GET' ){
 		
-		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{'/feeds'}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'feeds.html'}}) ]});
+		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'feeds.html'}}) ]});
 		} elsif ( $req->method() eq 'POST' ){
 			my $return = {'status' => 'failure'};
 			if( $req->parm('action') =~ /add|update|enable/){
@@ -407,7 +410,7 @@ $httpd->reg_cb (
 		my ($httpd, $req) = @_;
 		if( $req->method() eq 'GET' ){
 
-		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{'/linktypes'}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'linktypes.html'}}) ]});
+		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'linktypes.html'}}) ]});
 
 		} elsif ( $req->method() eq 'POST' ){
 			my $return = {'status' => 'failure'};
@@ -468,7 +471,7 @@ $httpd->reg_cb (
 		my ($httpd, $req) = @_;
 		if( $req->method() eq 'GET' ){
 
-		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{'/filters'}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'filters.html'}}) ]});
+		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'filters.html'}}) ]});
 
 		} elsif ( $req->method() eq 'POST' ){
 			my $return = {'status' => 'failure'};
@@ -540,9 +543,41 @@ $httpd->reg_cb (
 			$req->respond ({ content => ['application/json',  $return ]});
 		}
 	},
+	'/history' => sub{
+		my ($httpd, $req) = @_;
+		if( $req->method() eq 'GET' ){
+			$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'history.html'}}) ]});
+		} elsif ( $req->method() eq 'POST' ){
+			my $return = {'status' => 'failure'};
+			if( $req->parm('action') =~ /^(list|redownload|clear)$/ ){
+				
+				if ( $req->parm('action') eq 'list' ){
+					$return->{'history'} = JdlBot::DownloadHistory::listEntries();
+					$return->{'status'} = 'Success.';
+					
+				} elsif ( $req->parm('action') eq 'redownload' ) {
+					my $filterParams = $req->parm('data');
+					my $history = JdlBot::DownloadHistory::getEntry($filterParams);
+					if ($history) {
+						msg("Re-downloading:" . $history->{'title'} . " ...",1);
+						if (JdlBot::LinkHandler::JD2::processLinks($history->{'urls'}, $history->{'filter'}, $dbh, \%config)) {
+							$return->{'status'} = 'Success.';
+						}
+					}
+				} elsif ( $req->parm('action') eq 'clear' ) {
+					if (JdlBot::DownloadHistory::clearHistory()) {
+						$return->{'status'} = 'Success.';
+					}
+				}
+				
+			}
+			$return = encode_json($return);
+			$req->respond ({ content => ['application/json',  $return ]});
+		}
+	},
 	'/help' => sub{
 		my ($httpd, $req) = @_;
-		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{'/help'}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'help.html'}}) ]});
+		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'help.html'}}) ]});
 
 	},
 	'/log' => sub{

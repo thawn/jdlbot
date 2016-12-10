@@ -54,8 +54,7 @@ sub scrape {
 					}
 				}
 				if ( ! $filters->{$filter}->{'matches'} ){ $filters->{$filter}->{'matches'} = []; }
-				push(@{$filters->{$filter}->{'matches'}}, $item->description());
-				push(@{$filters->{$filter}->{'matches'}}, $item->link());
+				push(@{$filters->{$filter}->{'matches'}}, $item->description() . " " . $item->link());
 				
 				if ( $follow_links eq 'TRUE' ){
 					$filters->{$filter}->{'outstanding'} += 1;
@@ -158,7 +157,7 @@ sub findLinks {
 					msg("Sending links for filter: " . $filter->{'title'} . " ...",1);
 					if (JdlBot::LinkHandler::JD2::processLinks($linksToProcess, $filter, $dbh, $config)){
 						my $qh = $dbh->prepare('UPDATE filters SET tv_last=? WHERE title=?');
-						$qh->execute($filter->{'new_tv_last'}->[0], $filter->{'title'});
+						$qh->execute($filter->{'new_tv_last'}->[$count], $filter->{'title'});
 						push(@{$filter->{'new_tv_last_has'}}, $filter->{'new_tv_last'}->[$count]);
 						next CONTENT;
 					} else {

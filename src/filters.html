@@ -270,14 +270,6 @@
 		checkAutoFilter($id);
 	}
 
-	var toggle = function($id) {
-		if ($id.is(':hidden')) {
-			$id.show();
-		} else {
-			$id.hide();
-		}
-	}
-
 	var checkAutoFilter = function($id) {
 		var filter;
 		if ($id.find('input[name=tv]').val() === 'TRUE') {
@@ -365,7 +357,7 @@
 					'change',
 					':checkbox[name=tv]',
 					function() {
-						toggle($(this).parents('div.edit').find('div.tv_last'));
+						$(this).parents('div.edit').find('div.tv_last').toggle();
 						if (this.checked) {
 							$(this).parents('div.edit').find(':checkbox[name=stop_found]').prop(
 									'checked', false);

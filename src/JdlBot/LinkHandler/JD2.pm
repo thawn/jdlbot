@@ -10,6 +10,7 @@ use Data::Dumper;
 use Log::Message::Simple qw(msg error);
 
 use JdlBot::UA;
+use JdlBot::DownloadHistory;
 
 $ua->timeout(5);
 $ua->agent(JdlBot::UA::getAgent() );
@@ -20,6 +21,8 @@ sub processLinks {
 
 	if ( $filter->{'enabled'} eq 'FALSE' ) { return 0; }
 
+	JdlBot::DownloadHistory::storeEntry($links, $filter);
+	
 	my $jdInfo =
 	  $config->{'jd_address'} . ":" . $config->{'jd_port'} . "/flash";
 	my $jdStart = $filter->{'autostart'} eq 'TRUE' ? 1 : 0;

@@ -60,7 +60,8 @@ sub loadStatic {
 		'filters.html',
 		'feeds.html',
 		'linktypes.html',
-		'help.html'
+		'help.html',
+		'history.html'
 	);
 	foreach my $file (@staticFiles) {
 		$static->{$file} = loadFile($file);

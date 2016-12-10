@@ -33,11 +33,7 @@ var testCheckBox = function(s)\{
 \}
 
 var toggleShow = function($id) \{
-	if ($id.find('div.edit').is(':hidden')) \{
-		$id.find('div.edit').show();
-	\} else \{
-		$id.find('div.edit').hide();
-	\}
+	$id.find('div.edit').toggle();
 \}
 </script>
 </head>

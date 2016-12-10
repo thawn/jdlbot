@@ -14,6 +14,7 @@ use JdlBot::DownloadHistory;
 
 $ua->timeout(5);
 $ua->agent(JdlBot::UA::getAgent() );
+$ua->default_header('Referer' => 'http://localhost:9666/flashgot');
 
 #  Returns 1 for success, 0 for failure.
 sub processLinks {
@@ -24,20 +25,20 @@ sub processLinks {
 	JdlBot::DownloadHistory::storeEntry($links, $filter);
 	
 	my $jdInfo =
-	  $config->{'jd_address'} . ":" . $config->{'jd_port'} . "/flash";
+	  $config->{'jd_address'} . ":" . $config->{'jd_port'} . "/flashgot";
 	my $jdStart = $filter->{'autostart'} eq 'TRUE' ? 1 : 0;
 
-	my $c = get("http://$jdInfo/");
-	if ( !$c ) { return 0; }
+	my $c = get("http://$jdInfo");
+	if ( !$c ) { error("... failed toconnect to jDownloader API interface.",1); return 0; }
 
 	my $newlinks = join( "\r\n", @$links );
 	my $response;
-	$newlinks = uri_escape($newlinks);
+	#$newlinks = uri_escape($newlinks);
 	if ($jdStart) {
 		$response = $ua->post(
-			"http://$jdInfo/add",
+			"http://$jdInfo",
 			[
-				'source'    => 'http://localhost/',
+				'source'    => 'http://localhost',
 				'urls'      => $newlinks,
 				'autostart' => 1
 			]
@@ -45,8 +46,12 @@ sub processLinks {
 		
 	}
 	else {
-		$response = $ua->post( "http://$jdInfo/add",
-			[ 'source' => 'http://localhost/', 'urls' => $newlinks ] );
+		$response = $ua->post( "http://$jdInfo",
+			[ 
+				'source' => 'http://localhost',
+				'urls' => $newlinks,
+			]
+		);
 	}
 	if ( $response->is_success  ){
 		msg("... success.",1);
@@ -62,4 +67,4 @@ sub processLinks {
 		return 0;
 	}
 }
-
+1;

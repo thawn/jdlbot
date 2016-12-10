@@ -54,7 +54,7 @@ var insertElement = function(data) \{
 	return id;
 \}
 
-var addElement = function() \{
+var addElement = function(callback) \{
 	var $id = $('#new-element-form');
 	var filterVars = getElementValues($id);
 	$.post(document.baseURI, 'action=add&data=' + escape(JSON.stringify(filterVars)))
@@ -67,7 +67,7 @@ var addElement = function() \{
 				\}
 			\}).fail(function(data) \{
 				notify($('#add'), '', 'Connection Error', 'bg-danger', 4000);
-			\});
+			\}).always( function() \{ if (callback) \{callback();\}\});
 \}
 
 var updateElement = function($id) \{

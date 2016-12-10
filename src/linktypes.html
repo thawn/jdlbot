@@ -61,8 +61,7 @@ $(document).ready(function(){
 	$('[data-toggle="tooltip"]').tooltip();
 
 	$('#add').click( function(){
-			addElement();
-			updateLinktypes();
+			addElement(updateLinktypes);
 		});
 	$('#update-linktypes').click( function(){
 			updateLinktypes();
@@ -73,9 +72,13 @@ $(document).ready(function(){
 	$('#element-list').on('click', ':input[name=enabled]', function(){
 			updateLinktypes();
 	});
-	$('#element-list').on('keyup', ':input[name=priority]', function(){
-			$(this).val($(this).val().replace(/[^0-9]/g, ''));
-		});
+	$('#element-list').on('change', ':input[name=priority]', function(){
+		$(this).val($(this).val().replace(/[^0-9]/g, ''));
+		if (! $(this).val()) {
+			$(this).val(50);
+		}
+		updateLinktypes();
+	});
 });
 </script>
 <div class="row">

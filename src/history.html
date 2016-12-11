@@ -2,11 +2,15 @@
 	var elementCount = 0;
 
 	var fillInElement = function($id, data) {
-		$id.find('input[name=date]').val(data.date);
-		$id.find('input[name=title]').val(data.title);
-		for (var i = 0; i < data.urls.length; i++) {
-			var html = '<li><a href="' + data.urls[i] + '" target="_blank">' + data.urls[i] + '</a></li>';
-			$id.find('ul.linklist').append(html);
+		for (var i in data) {
+			if (i==='urls'){
+				for (var i = 0; i < data.urls.length; i++) {
+					var html = '<li><a href="' + data.urls[i] + '" target="_blank">' + data.urls[i] + '</a></li>';
+					$id.find('ul.linklist').append(html);
+				}
+			} else {
+				$id.find('input[name=' + i + ']').val(data[i]);
+			}
 		}
 		$id.find('button').each(function() {
 			$(this).data('item-id', $id);
@@ -82,6 +86,7 @@
 				<tr>
 					<th style="width: 250px;"">Date</th>
 					<th>Filter Title</th>
+					<th style="width: 100px;">Status</th>
 					<th style="width: 75px;">Details</th>
 					<th style="width: 100px;">Re-download</th>
 				</tr>
@@ -95,6 +100,7 @@
 	<tr id="element-template" class="history-item" style="display: none;">
 		<td><input name="date" class="form-control" disabled></td>
 		<td><input name="title" class="form-control" disabled>
+		<td><input name="status" class="form-control" disabled>
 			<div class="panel panel-default edit" style="display: none;">
 				<div class="panel-body">
 					<ul class="linklist" style="list-style: none;"></ul>

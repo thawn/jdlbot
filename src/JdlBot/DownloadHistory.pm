@@ -13,10 +13,11 @@ my @storage;
 
 
 sub storeEntry {
-	my ( $links, $title, $success ) = @_;
-	
-	my $timestamp = localtime();
-	push(@storage, { 'date' => $timestamp, 'title' => $title, 'urls' => $links, 'success' => $success });
+	my ( $links, $title, $status ) = @_;
+	my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
+	$year += 1900;
+	my $timestamp = sprintf("%d-%02d-%02d %02d:%02d", $year, $mon, $mday, $hour, $min );
+	push(@storage, { 'date' => $timestamp, 'title' => $title, 'urls' => $links, 'status' => $status });
 	return 1;
 }
 

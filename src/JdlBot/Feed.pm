@@ -200,6 +200,8 @@ CONTENT: foreach my $count ( 0 .. $#{ $filter->{'matches'} } ) {
 
 			if ( scalar @$linksToProcess > 0 ) {
 				@$linksToProcess = uniq(@$linksToProcess);
+				my %filterConf=%$filter;
+				delete($filterConf{'matches'});
 				if ( $filter->{'tv'} eq 'TRUE' ) {
 					unless ( $filter->{'new_tv_last_done'} ) {
 						$filter->{'new_tv_last_done'} = [];
@@ -214,11 +216,10 @@ CONTENT: foreach my $count ( 0 .. $#{ $filter->{'matches'} } ) {
 					if (
 						JdlBot::LinkHandler::JD2::processLinks(
 							$linksToProcess,
-							$filter, $count, $dbh, $config
+							\%filterConf, $filter->{'matches'}->[$count]->{'new_tv_last'}, $dbh, $config
 						)
 						)
 					{
-						JdlBot::TV::storeTvLast($filter->{'matches'}->[$count]->{'new_tv_last'},$filter->{'title'}, $dbh);
 						push(
 							@{ $filter->{'new_tv_last_done'} },
 							$filter->{'matches'}->[$count]->{'new_tv_last'}
@@ -234,7 +235,7 @@ CONTENT: foreach my $count ( 0 .. $#{ $filter->{'matches'} } ) {
 					if (
 						JdlBot::LinkHandler::JD2::processLinks(
 							$linksToProcess,
-							$filter, $count, $dbh, $config
+							\%filterConf, $filter->{'matches'}->[$count]->{'new_tv_last'}, $dbh, $config
 						)
 						)
 					{
@@ -252,7 +253,9 @@ CONTENT: foreach my $count ( 0 .. $#{ $filter->{'matches'} } ) {
 			}
 		}
 	}
-
+	if ($filter->{'new_tv_last_done'}) {
+		JdlBot::TV::storeTvLast($filter->{'new_tv_last_done'},$filter->{'title'}, $dbh);
+	}
 	return 0;
 }
 

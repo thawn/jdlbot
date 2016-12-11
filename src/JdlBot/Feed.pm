@@ -74,7 +74,7 @@ sub scrape {
 									my $match = 0;
 									if ( $filters->{$filter}->{'regex2'} eq 'TRUE' ){
 										my $reFilter = $filters->{$filter}->{'filter2'};
-										if ( $body =~ /$reFilter/ ){
+										if ( $body =~ m/$reFilter/ ){
 											$match = 1;
 										}
 									} else {
@@ -82,7 +82,6 @@ sub scrape {
 											$match = 1;
 										}
 									}
-									
 									if ($match){
 										push(@{$filters->{$filter}->{'matches'}}, $body);
 									}
@@ -127,7 +126,11 @@ sub findLinks {
 		my @links;
 		my $finder = URI::Find->new(sub {
 			my($uri) = shift;
-			push @links, $uri;
+			my $string;
+			open(my $fh, '>', \$string);
+			print $fh $uri;
+			close $fh;
+			push @links, $string;
 		});
 		$finder->find(\$content);
 		

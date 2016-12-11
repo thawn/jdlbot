@@ -4,6 +4,8 @@ package JdlBot::TV;
 use strict;
 use warnings;
 
+use Log::Message::Simple qw(msg error);
+
 sub checkTvMatch {
 	my ( $title , $filter , $dbh ) = @_;
 	my $tv_type;
@@ -44,6 +46,35 @@ sub checkTvMatch {
 		} elsif ( $tv_type->{'type'} eq 'd' ) {
 			return $tv_type->{'info'}->{'s'};
 		}
+	}
+}
+
+sub storeTvLast {
+	my ($new, $title , $dbh) = @_;
+	# Make sure that we're working with the latest and greatest tv_last
+	my $sth = $dbh->prepare('SELECT tv_last FROM filters WHERE title=? LIMIT 1');
+	$sth->execute($title);
+	if( $sth->errstr ){ return 0; }
+	my $old = ($sth->fetchall_arrayref())->[0]->[0];
+	my $compare = 0;
+	my $new_info=determineTvType($new);
+	my $old_info=determineTvType($old);
+	if ($new_info->{'type'} ne $old_info->{'type'}) {
+		$compare = 1;
+	}
+	if ($new_info->{'type'} eq 'd') {
+		if ($new_info->{'info'}->{'d'}>$old_info->{'info'}->{'d'}) {
+			$compare = 1;
+		}
+	} else {
+		if ("$new_info->{'info'}->{'s'}$new_info->{'info'}->{'e'}">"$old_info->{'info'}->{'s'}$old_info->{'info'}->{'e'}") {
+			$compare = 1;
+		}
+	}
+	if ($compare) {
+		my $qh = $dbh->prepare('UPDATE filters SET tv_last=? WHERE title=?');
+		$qh->execute( $new, $title );
+		
 	}
 }
 

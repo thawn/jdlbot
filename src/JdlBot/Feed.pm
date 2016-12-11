@@ -163,7 +163,7 @@ sub findLinks {
 	}
 	else {
 		$linkhosts = $dbh->selectall_arrayref(
-			"SELECT linkhost FROM linktypes WHERE enabled='TRUE' ORDER BY priority" );
+			"SELECT linkhost FROM linktypes WHERE enabled='TRUE' ORDER BY priority");
 	}
 
 CONTENT: foreach my $count ( 0 .. $#{ $filter->{'matches'} } ) {
@@ -218,10 +218,7 @@ CONTENT: foreach my $count ( 0 .. $#{ $filter->{'matches'} } ) {
 						)
 						)
 					{
-						my $qh =
-							$dbh->prepare('UPDATE filters SET tv_last=? WHERE title=?');
-						$qh->execute( $filter->{'matches'}->[$count]->{'new_tv_last'},
-							$filter->{'title'} );
+						JdlBot::TV::storeTvLast($filter->{'matches'}->[$count]->{'new_tv_last'},$filter->{'title'}, $dbh);
 						push(
 							@{ $filter->{'new_tv_last_done'} },
 							$filter->{'matches'}->[$count]->{'new_tv_last'}

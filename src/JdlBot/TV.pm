@@ -12,7 +12,7 @@ sub checkTvMatch {
 	# Make sure that we're working with the latest and greatest tv_last
 	my $sth = $dbh->prepare('SELECT tv_last FROM filters WHERE title=? LIMIT 1');
 	$sth->execute($filter->{'title'});
-	if( $sth->errstr ){ return 0; }
+	if( $sth->errstr ){ return ""; }
 	$filter->{'tv_last'} = ($sth->fetchall_arrayref())->[0]->[0];
 	
 	if ( $filter->{'tv_last'} ){
@@ -20,33 +20,29 @@ sub checkTvMatch {
 		if ( ! $filter->{'new_tv_last'} ){ $filter->{'new_tv_last'} = []; }
 	}
 	$tv_type = determineTvType( $title );
-	unless( $tv_type ){ return 0; }
+	unless( $tv_type ){ return ""; }
 	
 	if ( $tv_last ){
 		if ( $tv_last->{'type'} eq 's' && $tv_type->{'type'} eq 's' ){
 			if ( $tv_type->{'info'}->{'s'} . $tv_type->{'info'}->{'e'} > $tv_last->{'info'}->{'s'} . $tv_last->{'info'}->{'e'} ){
-				push(@{$filter->{'new_tv_last'}}, "S" . $tv_type->{'info'}->{'s'} . "E" . $tv_type->{'info'}->{'e'});
-				return 1;
+				return "S" . $tv_type->{'info'}->{'s'} . "E" . $tv_type->{'info'}->{'e'};
 			} else {
-				return 0;
+				return "";
 			}
 		} elsif ( $tv_last->{'type'} eq 'd' && $tv_type->{'type'} eq 'd' ){
 			if (  $tv_type->{'info'}->{'d'} - $tv_last->{'info'}->{'d'} > 0 ) {
-				push(@{$filter->{'new_tv_last'}}, $tv_type->{'info'}->{'s'});
-				return 1;
+				return $tv_type->{'info'}->{'s'};
 			} else {
-				return 0;
+				return "";
 			}
 		} else {
-			return 0;
+			return "";
 		}
 	} else {
 		if ( $tv_type->{'type'} eq 's' ){
-			push(@{$filter->{'new_tv_last'}}, "S" . $tv_type->{'info'}->{'s'} . "E" . $tv_type->{'info'}->{'e'});
-			return 1;
+			return "S" . $tv_type->{'info'}->{'s'} . "E" . $tv_type->{'info'}->{'e'};
 		} elsif ( $tv_type->{'type'} eq 'd' ) {
-			push(@{$filter->{'new_tv_last'}}, $tv_type->{'info'}->{'s'});
-			return 1;
+			return $tv_type->{'info'}->{'s'};
 		}
 	}
 }

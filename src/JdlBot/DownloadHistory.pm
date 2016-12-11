@@ -13,16 +13,10 @@ my @storage;
 
 
 sub storeEntry {
-	my ( $links, $filter ) = @_;
+	my ( $links, $title, $success ) = @_;
 	
 	my $timestamp = localtime();
-	my $title;
-	if ($filter->{'new_tv_last'}) {
-		$title= $filter->{'title'} . " " . $filter->{'new_tv_last'}->[0];
-	} else {
-		$title= $filter->{'title'};
-	}
-	push(@storage, { 'date' => $timestamp, 'title' => $title, 'urls' => $links, 'filter' => $filter });
+	push(@storage, { 'date' => $timestamp, 'title' => $title, 'urls' => $links, 'success' => $success });
 	return 1;
 }
 

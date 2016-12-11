@@ -18,26 +18,21 @@ $ua->default_header( 'Referer' => 'http://localhost:9666/flashgot' );
 
 #  Returns 1 for success, 0 for failure.
 sub processLinks {
-	my ( $links, $filter, $dbh, $config ) = @_;
-
-	if ( $filter->{'enabled'} eq 'FALSE' ) { return 0; }
-
-	JdlBot::DownloadHistory::storeEntry( $links, $filter );
+	my ( $links, $filter, $count, $dbh, $config ) = @_;
 
 	my $jdInfo =
 	  $config->{'jd_address'} . ":" . $config->{'jd_port'} . "/flashgot";
 
 	my $c = get("http://$jdInfo");
 	if ( !$c ) {
-		error( "... failed toconnect to jDownloader API interface.", 1 );
+		JdlBot::DownloadHistory::storeEntry( $links, $filter->{'title'} . " " . $filter->{'matches'}->[$count]->{'new_tv_last'} , "failed to connect to jDownloader" );
+		error( "... failed to connect to jDownloader API interface.", 1 );
 		return 0;
 	}
 
-	my $newlinks = join( "\r\n", @$links );
-	my $response;
 	my %data = (
 		'source' => 'http://localhost',
-		'urls'   => $newlinks,
+		'urls'   => join( "\r\n", @$links ),
 	  );
 
 	if ($filter->{'autostart'} eq 'TRUE') {
@@ -46,9 +41,10 @@ sub processLinks {
 	if ($filter->{'path'}){
 		$data{'dir'} = $filter->{'path'};
 	}
-	$response = $ua->post( "http://$jdInfo", \%data );
+	my $response = $ua->post( "http://$jdInfo", \%data );
 	if ( $response->is_success ) {
 		msg( "... success.", 1 );
+		JdlBot::DownloadHistory::storeEntry( $links, $filter->{'title'} . " " . $filter->{'matches'}->[$count]->{'new_tv_last'} , "submitted" );
 		if ( $filter->{'stop_found'} eq 'TRUE' ) {
 			$filter->{'enabled'} = 'FALSE';
 			my $qh =
@@ -59,6 +55,7 @@ sub processLinks {
 		return 1;
 	}
 	else {
+		JdlBot::DownloadHistory::storeEntry( $links, $filter->{'title'} . " " . $filter->{'matches'}->[$count]->{'new_tv_last'} , "failed to submit" );
 		error( "... failed.", 1 );
 		return 0;
 	}

@@ -63,7 +63,7 @@ If you have problems, please check the [wiki](http://github.com/jdlbot/jdlbot/wi
 ## Todo
 
 *   Implement my.jdownloader api
-*   Implement retry on failed or offline link
+*   Implement option that filter2 cuts out only matching part of page.
 *   Suggest something!
 
 ## Build instructions

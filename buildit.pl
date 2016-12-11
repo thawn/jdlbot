@@ -12,7 +12,7 @@ use File::Path qw(make_path remove_tree);
 use File::Find;
 use Cwd;
 
-my $modulesToAdd = "-M Moose::Meta::Object::Trait -M Package::Stash::XS";
+my $modulesToAdd = "-M Moose::Meta::Object::Trait -M Package::Stash::XS -M URI::Find";
 my $filesToAdd = "";
 
 my $copyTo = (dir( cwd , 'build', 'current' ))->stringify;

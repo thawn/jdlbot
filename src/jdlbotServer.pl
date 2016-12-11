@@ -10,7 +10,6 @@ use AnyEvent::HTTP;
 
 use PAR;
 
-use Data::Dumper;
 use Error qw(:try);
 
 use Path::Class;

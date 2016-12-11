@@ -6,7 +6,6 @@ use warnings;
 
 use LWP::Simple qw($ua get);
 use URI::Escape;
-use Data::Dumper;
 use Log::Message::Simple qw(msg error);
 
 use JdlBot::UA;

@@ -4,8 +4,6 @@ package JdlBot::Feed;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use XML::FeedPP;
 use Error qw(:try);
 use AnyEvent::HTTP;

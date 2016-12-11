@@ -4,7 +4,6 @@ package JdlBot::TV;
 use strict;
 use warnings;
 
-use Data::Dumper;
 use Log::Message::Simple qw(msg error);
 
 sub checkTvMatch {

@@ -3,8 +3,6 @@ package JdlBot::DownloadHistory;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 require Exporter;
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(storeEntry listEntries getEntry resetHistory);

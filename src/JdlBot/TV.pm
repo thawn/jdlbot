@@ -4,6 +4,7 @@ package JdlBot::TV;
 use strict;
 use warnings;
 
+use Data::Dumper;
 use Log::Message::Simple qw(msg error);
 
 sub checkTvMatch {
@@ -50,32 +51,46 @@ sub checkTvMatch {
 }
 
 sub storeTvLast {
-	my ($new, $title , $dbh) = @_;
-	# Make sure that we're working with the latest and greatest tv_last
+	my ($newArray, $title , $dbh) = @_;
 	my $sth = $dbh->prepare('SELECT tv_last FROM filters WHERE title=? LIMIT 1');
 	$sth->execute($title);
 	if( $sth->errstr ){ return 0; }
-	my $old = ($sth->fetchall_arrayref())->[0]->[0];
-	my $compare = 0;
+	my $original = ($sth->fetchall_arrayref())->[0]->[0];
+	my $update = 0;
+	my $new;
+	my $old = $original;
+	
+	foreach my $count ( 0 .. $#{$newArray}) {
+		$new = $newArray->[$count];
+		$update = isNewer($new, $old);
+		if ($update) {
+			$old = $new;
+		}
+	}
+	if (isNewer($old, $original)) {
+		my $qh = $dbh->prepare('UPDATE filters SET tv_last=? WHERE title=?');
+		$qh->execute( $old, $title ); #$old has been updated so it is not really old.
+	}
+}
+
+sub isNewer {
+	my ($new, $old) = @_;
 	my $new_info=determineTvType($new);
 	my $old_info=determineTvType($old);
-	if ($new_info->{'type'} ne $old_info->{'type'}) {
-		$compare = 1;
-	}
-	if ($new_info->{'type'} eq 'd') {
-		if ($new_info->{'info'}->{'d'}>$old_info->{'info'}->{'d'}) {
-			$compare = 1;
+	if ($old_info && $new_info) {
+		if ($new_info->{'type'} eq 'd') {
+			if ($new_info->{'info'}->{'d'}>$old_info->{'info'}->{'d'}) {
+				return 1;
+			}
+		} else {
+			if ("$new_info->{'info'}->{'s'}$new_info->{'info'}->{'e'}">"$old_info->{'info'}->{'s'}$old_info->{'info'}->{'e'}") {
+				return 1;
+			}
 		}
-	} else {
-		if ("$new_info->{'info'}->{'s'}$new_info->{'info'}->{'e'}">"$old_info->{'info'}->{'s'}$old_info->{'info'}->{'e'}") {
-			$compare = 1;
-		}
+	} elsif ($new_info) {
+		return 1;
 	}
-	if ($compare) {
-		my $qh = $dbh->prepare('UPDATE filters SET tv_last=? WHERE title=?');
-		$qh->execute( $new, $title );
-		
-	}
+	return 0;
 }
 
 sub determineTvType {

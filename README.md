@@ -6,7 +6,7 @@ jDlBot is an RSS feed and web scraper that finds and sends links to [jDownloader
 
 ### Mac & Windows
 
-1.   Download an appropriate build from [here](https://github.com/thawn/jdlbot/releases/tag/0.1.4).
+1.   Download an appropriate build from [here](https://github.com/thawn/jdlbot/releases/).
 2.   Extract.
 3.   Run.
 4.   Point your browser at [127.0.0.1:10050](http://127.0.0.1:10050/) (do NOT use IE).
@@ -56,6 +56,10 @@ If you have problems, please check the [wiki](http://github.com/jdlbot/jdlbot/wi
 *   Global Link Type priority list
 
     Allows you to download from your preferred hosts consistently
+    
+*   Automatically start downloads in jDownloader if desired
+
+*   Specify the folder into which jDownloader should put the file once it is finished
     
 *		Download history allows to re-add links to jDownloader (history is only stored in memory, not saved to disk)
 

@@ -5,7 +5,7 @@
 		$id.find('input[name=date]').val(data.date);
 		$id.find('input[name=title]').val(data.title);
 		for (var i = 0; i < data.urls.length; i++) {
-			var html = '<li><a href="' + data.urls[i] + '">' + data.urls[i] + '</a></li>';
+			var html = '<li><a href="' + data.urls[i] + '" target="_blank">' + data.urls[i] + '</a></li>';
 			$id.find('ul.linklist').append(html);
 		}
 		$id.find('button').each(function() {
@@ -97,7 +97,7 @@
 		<td><input name="title" class="form-control" disabled>
 			<div class="panel panel-default edit" style="display: none;">
 				<div class="panel-body">
-					<ul class="linklist"></ul>
+					<ul class="linklist" style="list-style: none;"></ul>
 				</div>
 			</div></td>
 		<td><button type="button" class="btn btn-info details">Details</button></td>

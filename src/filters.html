@@ -43,8 +43,8 @@
 						notify($('#config-save'), '', data.status, 'bg-danger', 4000);
 					}
 				}, 'json').fail(function(data) {
-					notify($('#config-save'), '', 'Connection Error', 'bg-danger', 4000);
-				});
+			notify($('#config-save'), '', 'Connection Error', 'bg-danger', 4000);
+		});
 	}
 
 	var fillInConfig = function($id, data) {
@@ -88,8 +88,8 @@
 								notify($('#add'), '', data.status, 'bg-danger', 4000);
 							}
 						}, 'json').fail(function(data) {
-							notify($('#add'), '', 'Connection Error', 'bg-danger', 4000);
-						});
+					notify($('#add'), '', 'Connection Error', 'bg-danger', 4000);
+				});
 	}
 
 	var getElementValues = function($id) {
@@ -113,7 +113,7 @@
 
 		return filterVars;
 	}
-	
+
 	var fillInElement = function($id, data) {
 		if (data.tv_last !== "") {
 			$id.find('td.filter-item span.item-title').text(
@@ -156,54 +156,80 @@
 		});
 		$id.find('input').data('item-id', $id);
 		$id.find('.filterswitch a').data('item-id', $id);
-		checkAutoFilter($id);
+		var fields = $('#config').find('input[name=config_fields]').val().split(',');
+		for (var i = 0; i < fields.length; i++) {
+			checkAutoFilter($id,fields[i]);
+		}
 	}
 
-	var checkAutoFilter = function($id) {
+	var checkAutoFilter = function($id, field) {
 		var filter;
 		if ($id.find('input[name=tv]').val() === 'TRUE') {
-			filter = getFilterConfig($id, $('#config').find('input[name=tv]').val());
+			value = getConfigValue($('#config').find('input[name=tv_'+ field + ']'), $id);
 		} else {
-			filter = getFilterConfig($id, $('#config').find('input[name=movies]').val());
+			value = getConfigValue($('#config').find('input[name=movie_'+ field + ']'), $id);
 		}
-		if ($id.find('input[name=filter1]').val() !== filter) {
-			$id.find('input[name=filter1]').data('changed', true);
+		if (typeof value === 'boolean') {
+			if ($id.find('input[name='+ field + ']').prop('checked') !== value) {
+				$id.find('input[name='+ field + ']').data('changed', true);
+			} else {
+				$id.find('input[name='+ field + ']').data('changed', false);
+			}
 		} else {
-			$id.find('input[name=filter1]').data('changed', false);
+			if ($id.find('input[name='+ field + ']').val() !== value) {
+				$id.find('input[name='+ field + ']').data('changed', true);
+			} else {
+				$id.find('input[name='+ field + ']').data('changed', false);
+			}
 		}
-		
+	}
+	
+	var autoFill = function($id) {
+		var fields = $('#config').find('input[name=config_fields]').val().split(',');
+		for (var i = 0; i < fields.length; i++) {
+			autoFillField($id,fields[i]);
+		}
 	}
 
-	var autoFillFilter1 = function($id) {
+	var autoFillField = function($id, field) {
 		if (typeof $id == 'undefined') {
 			$id = $('#new-element-form');
 		}
-		var filter;
+		var value;
 		var regex;
 		if ($id.find('input[name=tv]').val() === 'TRUE') {
-			if ($('#config').find(':checkbox[name=tv_enabled]').is(':checked')) {
-				filter = getFilterConfig($id, $('#config').find('input[name=tv]').val());
-				regex = $('#config').find(':checkbox[name=tv_regex]').is(':checked');
-			}
+			value = getConfigValue($('#config').find('input[name=tv_'+ field + ']'), $id);
 		} else {
-			if ($('#config').find(':checkbox[name=movie_enabled]').is(':checked')) {
-				filter = getFilterConfig($id, $('#config').find('input[name=movies]').val());
-				regex = $('#config').find(':checkbox[name=movie_regex]').is(':checked'); 
-			}
+			value = getConfigValue($('#config').find('input[name=movie_'+ field + ']'), $id);
 		}
-		if (typeof filter != 'undefined') {
-			if ($id.find('input[name=filter1]').val() === '' || !$id.find('input[name=filter1]').data('changed') ) {
-				$id.find('input[name=filter1]').val(filter);
-				if (regex) {
-					$id.find(':checkbox[name=regex1]').prop('checked', true);
+		if (typeof value === 'boolean') {
+			if (field.includes('regex')) {
+				if (!$id.find('input[name='+ field.replace('regex','filter') + ']').data('changed')) {
+					$id.find('input[name='+ field + ']').prop('checked',value);
 				}
+			} else if (!$id.find('input[name='+ field + ']').data('changed')) {
+				$id.find('input[name='+ field + ']').prop('checked',value);
+			}
+		} else if (value !== '') {
+			if ($id.find('input[name='+ field + ']').val() === ''
+					|| !$id.find('input[name='+ field + ']').data('changed')) {
+				$id.find('input[name='+ field + ']').val(value);
 			}
 		}
 	}
 
-	var getFilterConfig = function($id, filterStr) {
-		var filter = filterStr.replace('%t', $id.find('input[name=title]').val());
-		return filter;
+	var getConfigValue = function($configInput, $targetId) {
+		if ($configInput.attr('type') === 'checkbox') {
+			return $configInput.prop('checked')
+		} else {
+			var filterStr = $configInput.val();
+			if (filterStr) {
+				var filter = filterStr.replace('%t', $targetId.find('input[name=title]').val());
+				return filter;
+			} else {
+				return "";
+			}
+		}
 	}
 
 	var switchFilterType = function($id) {
@@ -216,85 +242,98 @@
 			$id.parents('div.edit').find(':checkbox[name=stop_found]').prop('checked',
 					false);
 			$id.parents('div.edit').find('div.stop_found').hide();
-		} else {
+		} else if ($id.hasClass('movie-filter')) {
 			$id.parents('div.edit').find('input[name=tv]').val('FALSE');
 			$id.parents('div.edit').find('div.tv_last').hide();
 			$id.parents('div.edit').find('div.stop_found').show();
+		} else if ($id.hasClass('tv-conf')) {
+			$('#config').find('.movies').hide();
+			$('#config').find('.tv').show();
+		} else if ($id.hasClass('movie-conf')) {
+			$('#config').find('.tv').hide();
+			$('#config').find('.movies').show();
 		}
+
 	}
-	
+
 	var elementCount = 0;
 
-
 	$(document).ready(
-		function() {
-			// Add tips for the new filter input
-			$('[data-toggle="tooltip"]').tooltip();
+			function() {
+				//fetch the configuration from the database
+				getConfig();
+				// Add tips for the new filter input
+				$('[data-toggle="tooltip"]').tooltip();
 
-			// Add event handlers for everything.  Most are delegated at the bubble-up stage.
-			$('#filters').on(
-					'change',
-					':checkbox[name=stop_found]',
-					function() {
-						if (this.checked) {
-							$(this).parents('div.edit').find(':checkbox[name=tv]:checked').each(
-									function() {
-										$(this).prop('checked', false);
-										$(this).change();
-									});
-						}
-					});
-			$('#filters').on(
-					'change',
-					':checkbox[name=tv]',
-					function() {
-						$(this).parents('div.edit').find('div.tv_last').toggle();
-						if (this.checked) {
-							$(this).parents('div.edit').find(':checkbox[name=stop_found]').prop(
-									'checked', false);
-						}
-					});
-			$('#filters').on('change', ':checkbox[name=enabled]', function() {
-				updateElement($(this).data('item-id'));
-			});
-			$('#filters').on('click', 'button.update', function() {
-				updateElement($(this).data('item-id'));
-				toggleShow($(this).data('item-id'));
-			});
-			$('#filters').on('click', 'button.delete', function() {
-				deleteElement($(this).data('item-id'),$(this).data('item-id').find('input[name=old_title]').val());
-			});
-			$('#filters').on('click', 'button.cancel', function() {
-				toggleShow($(this).data('item-id'));
-			});
-			$('#filters').on('click', 'button.edit-button', function() {
-				toggleShow($(this).data('item-id'));
-			});
-			$('#filters').on('change', 'input[name=title]', function() {
-				autoFillFilter1($(this).data('item-id'));
-			});
-			$('#filters').on('change', 'input[name=filter1]', function() {
-				$(this).data('changed', true);
-			});
-			$('#filters').on('click', '.filterswitch a', function() {
-				switchFilterType($(this));
-			});
-			$('#add').click(function() {
-				addElement();
-			});
-			$('#config-save').click(function() {
-				saveConfig();
-			});
-			$('.movie-filter a').click();
-			// Load the configuration
-			getConfig();
+				// Add event handlers for everything.  Most are delegated at the bubble-up stage.
+				$('#filters').on(
+						'change',
+						':checkbox[name=stop_found]',
+						function() {
+							if (this.checked) {
+								$(this).parents('div.edit').find(':checkbox[name=tv]:checked').each(
+										function() {
+											$(this).prop('checked', false);
+											$(this).change();
+										});
+							}
+						});
+				$('#filters').on(
+						'change',
+						':checkbox[name=tv]',
+						function() {
+							$(this).parents('div.edit').find('div.tv_last').toggle();
+							if (this.checked) {
+								$(this).parents('div.edit').find(':checkbox[name=stop_found]').prop(
+										'checked', false);
+							}
+						});
+				$('#filters').on('change', ':checkbox[name=enabled]', function() {
+					updateElement($(this).data('item-id'));
+				});
+				$('#filters').on('click', 'button.update', function() {
+					updateElement($(this).data('item-id'));
+					toggleShow($(this).data('item-id'));
+				});
+				$('#filters').on(
+						'click',
+						'button.delete',
+						function() {
+							deleteElement($(this).data('item-id'), $(this).data('item-id').find(
+									'input[name=old_title]').val());
+						});
+				$('#filters').on('click', 'button.cancel', function() {
+					toggleShow($(this).data('item-id'));
+				});
+				$('#filters').on('click', 'button.edit-button', function() {
+					toggleShow($(this).data('item-id'));
+				});
+				$('#filters').on('change', 'input[name=title]', function() {
+					autoFill($(this).data('item-id'));
+				});
+				$('#filters').on('change', 'input[name=filter1]', function() {
+					$(this).data('changed', true);
+				});
+				$('#filters').on('click', '.filterswitch a', function() {
+					switchFilterType($(this));
+				});
+				$('#add').click(function() {
+					addElement();
+				});
+				$('#config-save').click(function() {
+					saveConfig();
+				});
+				$('.movie-filter a').click();
+				$('.movie-conf a').click();
+				// Load the configuration
 
-			// Grab the list of feeds, then grab the list of filters.
-			listFeeds(function(){
-				listElements(true);
-				$('#new-element-form').find('ul.feed_list').find('input[type=checkbox]').prop('checked', true);
+				// Grab the list of feeds, then grab the list of filters.
+				listFeeds(function() {
+					listElements(true);
+					$('#new-element-form').find('ul.feed_list').find('input[type=checkbox]')
+							.prop('checked', true);
+				});
 			});
-		});
 </script>
 <div class="row" id="filters">
 	<div class="col-sm-7">
@@ -324,35 +363,68 @@
 				</div>
 				<div id="config" class="panel-collapse collapse">
 					<div class="panel-body">
-						<p>If enabled, these expressions will be automatically inserted into Filter 1. %t will be replaced with the filter title. This will only be applied if Filter 1 is empty or if it has not been changed manually.</p>
+						<ul class="nav nav-tabs nav-justified">
+							<li class="filterswitch movie-conf" class="active"><a>Movies</a></li>
+							<li class="filterswitch tv-conf"><a>TV series</a></li>
+						</ul>
+						<p>Here you can define default values that will be automatically inserted into the respective fields of a filter. Empty values will be ignored.
+							%t will be replaced with the filter title.</p>
 						<input type="hidden" name="old_conf" value="default">
-						<div class="form-group">
-							<label for="movies">Movies:</label> &nbsp;&nbsp;
-							<div class="center-block">
-								<input type="checkbox" name="movie_enabled"> Enable?
-							</div>
+						<input type="hidden" name="config_fields">
+						<div class="form-group movies">
+							<label for="movie_filter1">Filter 1:</label> &nbsp;&nbsp;
 							<div class="input-group">
-								<input type="text" name="movies" class="form-control" data-toggle="tooltip"
+								<input type="text" name="movie_filter1" class="form-control" data-toggle="tooltip"
 									data-placement="left"
-									title="Default expression for movies.  %t will be automatically replaced with the filter title.">
+									title="Default expression for movie filter 1.  %t will be automatically replaced with the filter title.">
 								<span class="input-group-addon"> <input type="checkbox"
-									name="movie_regex"> Regex?
+									name="movie_regex1"> Regex?
 								</span>
 							</div>
 						</div>
-						<div class="form-group">
-							<label for="tv">TV-shows:</label>
-							<div class="center-block">
-								<input type="checkbox" name="tv_enabled"> Enable?
-							</div>
+						<div class="form-group movies">
+							<label for="movie_filter2">Filter 2:</label> &nbsp;&nbsp;
 							<div class="input-group">
-								<input type="text" name="tv" class="form-control" data-toggle="tooltip"
+								<input type="text" name="movie_filter2" class="form-control" data-toggle="tooltip"
 									data-placement="left"
-									title="Default expression for TV shows. %t will be automatically replaced with the filter title.">
+									title="Default expression for movie filter 2.  %t will be automatically replaced with the filter title.">
 								<span class="input-group-addon"> <input type="checkbox"
-									name="tv_regex"> Regex?
+									name="movie_regex2"> Regex?
 								</span>
 							</div>
+						</div>
+						<div class="form-group movies" style="display: none;">
+							<label for="movie_path">Default Save Path:</label> <input type="text"
+								name="movie_path" class="form-control" data-toggle="tooltip"
+								data-placement="left"
+								title="Default expression for TV shows. %t will be automatically replaced with the filter title.">
+						</div>
+						<div class="form-group tv" style="display: none;">
+							<label for="tv_filter1">Filter 1:</label>
+							<div class="input-group">
+								<input type="text" name="tv_filter1" class="form-control" data-toggle="tooltip"
+									data-placement="left"
+									title="Default expression for TV show filter 1. %t will be automatically replaced with the filter title.">
+								<span class="input-group-addon"> <input type="checkbox"
+									name="tv_regex1"> Regex?
+								</span>
+							</div>
+						</div>
+						<div class="form-group tv" style="display: none;">
+							<label for="tv_filter2">Filter 2:</label>
+							<div class="input-group">
+								<input type="text" name="tv_filter2" class="form-control" data-toggle="tooltip"
+									data-placement="left"
+									title="Default expression for TV show filter 2. %t will be automatically replaced with the filter title.">
+								<span class="input-group-addon"> <input type="checkbox"
+									name="tv_regex2"> Regex?
+								</span>
+							</div>
+						</div>
+						<div class="form-group tv" style="display: none;">
+							<label for="tv_path">Default Save Path:</label> <input type="text" name="tv_path"
+								class="form-control" data-toggle="tooltip" data-placement="left"
+								title="Default save path for TV shows. %t will be automatically replaced with the filter title.">
 						</div>
 						<button type="button" id="config-save" class="btn btn-primary"
 							data-toggle="popover">Save</button>
@@ -397,6 +469,16 @@
 						</span>
 					</div>
 				</div>
+				<div class="form-group tv_last" style="display: none;">
+					<label for="tv_last">Last downloaded episode:</label> <input type="text"
+						name="tv_last" class="form-control" data-toggle="tooltip" data-placement="left"
+						title="This field should be either a season and episode number (formatted as 'S01E01') or a date (formatted as '2010/10/30').  TV episodes that come after the designated 'last' will be downloaded. Optional.">
+				</div>
+				<div class="form-group">
+					<label for="tv_last">Save Path:</label> <input type="text"
+						name="path" class="form-control" data-toggle="tooltip" data-placement="left"
+						title="This is the path where jDownloader will save the file once downloaded.">
+				</div>
 				<div class="form-group">
 					<label>Feeds:</label>
 					<ul class="feed_list" style="list-style: none;"></ul>
@@ -412,12 +494,7 @@
 						title="Does exactly what it says.  If there is a positive match, and links are found this filter will be disabled.">
 						Disable when found? </label>
 				</div>
-				<div class="form-group tv_last" style="display: none;">
-					<label for="tv_last">Last downloaded episode:</label> <input type="text"
-						name="tv_last" class="form-control" data-toggle="tooltip" data-placement="left"
-						title="This field should be either a season and episode number (formatted as 'S01E01') or a date (formatted as '2010/10/30').  TV episodes that come after the designated 'last' will be downloaded. Optional.">
-				</div>
-				<div class="checkbox" style="display: none;">
+				<div class="checkbox">
 					<label><input type="checkbox" name="autostart" data-toggle="tooltip"
 						data-placement="left" checked
 						title="All matching links will be added to the linkgrabber.  If this is checked, they will also be downloaded.">
@@ -465,6 +542,14 @@
 							</span>
 						</div>
 					</div>
+					<div class="form-group tv_last" style="display: none;">
+						<label for="tv_last">Last downloaded episode:</label> <input type="text"
+							name="tv_last" class="form-control">
+					</div>
+					<div class="form-group">
+						<label for="tv_last">Save Path:</label> <input type="text" name="path"
+							class="form-control">
+					</div>
 					<div class="form-group">
 						<label>Feeds:</label>
 						<ul class="feed_list" style="list-style: none;"></ul>
@@ -477,11 +562,7 @@
 						<label><input type="checkbox" name="stop_found"> Disable when
 							found? </label>
 					</div>
-					<div class="form-group tv_last" style="display: none;">
-						<label for="tv_last">Last downloaded episode:</label> <input type="text"
-							name="tv_last" class="form-control">
-					</div>
-					<div class="checkbox" style="display: none;">
+					<div class="checkbox">
 						<label><input type="checkbox" name="autostart"> Auto start in
 							jDownloader? </label>
 					</div>

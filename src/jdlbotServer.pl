@@ -360,13 +360,13 @@ $httpd->reg_cb (
 				}
 			} elsif ( $req->parm('action') eq 'delete' ) {
 				my $feedParams = decode_json(uri_unescape($req->parm('data')));
-				$feedParams->{'url'} =~ s/^http:\/\///;
+				$feedParams->{'uid'} =~ s/^http:\/\///;
 				
 				$return->{'status'} = "Could not delete feed.  Incorrect url?";
 				my $qh = $dbh->prepare('DELETE FROM feeds WHERE url=?');
-				$qh->execute($feedParams->{'url'});
+				$qh->execute($feedParams->{'uid'});
 				$qh = $dbh->prepare('SELECT title, feeds FROM filters WHERE feeds LIKE ? ');
-				$qh->execute('%' . $feedParams->{'url'} . '%');
+				$qh->execute('%' . $feedParams->{'uid'} . '%');
 				my $filters = $qh->fetchall_hashref('title');
 
 				if ( !$qh->errstr ){
@@ -375,7 +375,7 @@ $httpd->reg_cb (
 						my $feeds = decode_json($filters->{$filter}->{'feeds'});
 						my $new_feeds = [];
 						foreach my $feed ( @{$feeds} ){
-							if ( $feed ne $feedParams->{'url'} ){
+							if ( $feed ne $feedParams->{'uid'} ){
 								push(@$new_feeds, $feed);
 							}
 						}
@@ -384,7 +384,7 @@ $httpd->reg_cb (
 				}
 					
 				if(!$qh->errstr){
-					removeWatcher($feedParams->{'url'});
+					removeWatcher($feedParams->{'uid'});
 					$return->{'status'} = 'Success.';
 					$return->{'element'} = $feedParams;						
 				}

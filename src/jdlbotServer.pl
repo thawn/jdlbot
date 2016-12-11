@@ -563,7 +563,7 @@ $httpd->reg_cb (
 					my $history = JdlBot::DownloadHistory::getEntry($filterParams);
 					if ($history) {
 						msg("Re-downloading:" . $history->{'title'} . " ...",1);
-						if (JdlBot::LinkHandler::JD2::processLinks($history->{'urls'}, $history->{'filter'}, $dbh, \%config)) {
+						if (JdlBot::LinkHandler::JD2::processLinks($history->{'urls'}, $history->{'filter'}, $history->{'episode'}, $dbh, \%config)) {
 							$return->{'status'} = 'Success.';
 						}
 					}

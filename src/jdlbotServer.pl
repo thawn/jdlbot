@@ -230,7 +230,7 @@ $httpd->reg_cb (
 																});
 		my $navHtml = getNavigation($req->url,\%siteMap, \%siteMapOrder);
 
-		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'navigation' => $navHtml, 'content' => $statusHtml}) ]});
+		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'strippedTitle' => $siteMap{$req->url} =~ s/<span.*span> //r, 'navigation' => $navHtml, 'content' => $statusHtml}) ]});
 	},
 	'/config' => sub {
 		my ($httpd, $req) = @_;
@@ -244,7 +244,7 @@ $httpd->reg_cb (
 																'check_update' => $config{'check_update'} eq 'TRUE' ? 'checked="checked"' : '',
 																'open_browser' => $config{'open_browser'} eq 'TRUE' ? 'checked="checked"' : ''
 																});
-		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $configHtml}) ]});
+		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'strippedTitle' => $siteMap{$req->url} =~ s/<span.*span> //r, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $configHtml}) ]});
 		} elsif ( $req->method() eq 'POST' ){
 			if( $req->parm('action') eq 'update' ){
 				my $configParams = decode_json(uri_unescape($req->parm('data')));
@@ -270,7 +270,7 @@ $httpd->reg_cb (
 		my ($httpd, $req) = @_;
 		if( $req->method() eq 'GET' ){
 		
-		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'feeds.html'}}) ]});
+		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'strippedTitle' => $siteMap{$req->url} =~ s/<span.*span> //r, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'feeds.html'}}) ]});
 		} elsif ( $req->method() eq 'POST' ){
 			my $return = {'status' => 'failure'};
 			if( $req->parm('action') =~ /add|update|enable/){
@@ -409,7 +409,7 @@ $httpd->reg_cb (
 		my ($httpd, $req) = @_;
 		if( $req->method() eq 'GET' ){
 
-		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'linktypes.html'}}) ]});
+		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'strippedTitle' => $siteMap{$req->url} =~ s/<span.*span> //r, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'linktypes.html'}}) ]});
 
 		} elsif ( $req->method() eq 'POST' ){
 			my $return = {'status' => 'failure'};
@@ -470,7 +470,7 @@ $httpd->reg_cb (
 		my ($httpd, $req) = @_;
 		if( $req->method() eq 'GET' ){
 
-		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'filters.html'}}) ]});
+		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'strippedTitle' => $siteMap{$req->url} =~ s/<span.*span> //r, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'filters.html'}}) ]});
 
 		} elsif ( $req->method() eq 'POST' ){
 			my $return = {'status' => 'failure'};
@@ -548,7 +548,7 @@ $httpd->reg_cb (
 	'/history' => sub{
 		my ($httpd, $req) = @_;
 		if( $req->method() eq 'GET' ){
-			$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'history.html'}}) ]});
+			$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'strippedTitle' => $siteMap{$req->url} =~ s/<span.*span> //r, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'history.html'}}) ]});
 		} elsif ( $req->method() eq 'POST' ){
 			my $return = {'status' => 'failure'};
 			if( $req->parm('action') =~ /^(list|redownload|clear)$/ ){
@@ -579,7 +579,7 @@ $httpd->reg_cb (
 	},
 	'/help' => sub{
 		my ($httpd, $req) = @_;
-		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'help.html'}}) ]});
+		$req->respond ({ content => ['text/html', $templates{'base'}->fill_in(HASH => {'title' => $siteMap{$req->url}, 'strippedTitle' => $siteMap{$req->url} =~ s/<span.*span> //r, 'navigation' => getNavigation($req->url,\%siteMap, \%siteMapOrder), 'content' => $static->{'help.html'}}) ]});
 
 	},
 	'/log' => sub{

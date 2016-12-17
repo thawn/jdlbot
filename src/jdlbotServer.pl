@@ -204,7 +204,7 @@ my %siteMapOrder = (
 );
 
 my $httpd = AnyEvent::HTTPD->new (host => $config{'host'}, port => $config{'port'});
-	msg("Server running on port: $config{'port'}\n" .
+msg("Server running on port: $config{'port'}\n" .
 	"Open http://127.0.0.1:$config{'port'}/ in your favorite web browser to continue.\n",1);
 	
 	if( $config{'open_browser'} eq 'TRUE' ){openBrowser(%config);}

@@ -88,8 +88,7 @@ $(document).ready(function(){
 				<table id="element-list" class="table table-striped">
 					<thead>
 						<tr>
-							<th style="width: 25px;">Enable</th>
-							<th>Host/Url fragment</th>
+							<th>Enable?&nbsp;&nbsp;Host/Url&nbsp;fragment</th>
 							<th style="width: 75px;">Priority</th>
 							<th style="width: 75px;">Delete</th>
 						</tr>
@@ -126,12 +125,18 @@ $(document).ready(function(){
 </div>
 <table style="display: none;">
 	<tr id="element-template" style="display: none;">
-		<td><input type="checkbox" name="enabled"></td>
-		<td class="linktype-item"><input type="text" name="linkhost"
-			class="form-control" disabled="disabled"></td>
-		<td><input name="priority" type="number" class="form-control"></td>
 		<td>
-			<button type="button" class="btn btn-danger delete">Delete</button>
+			<div class="input-group input-group-sm">
+				<span class="input-group-addon">
+					<input type="checkbox" name="enabled">
+				</span>
+				<input type="text" name="linkhost"
+					class="form-control" disabled="disabled">
+			</div>
+		</td>
+		<td><input name="priority" type="number" class="form-control input-sm"></td>
+		<td>
+			<button type="button" class="btn btn-danger btn-sm delete">Delete</button>
 		</td>
 	</tr>
 </table>

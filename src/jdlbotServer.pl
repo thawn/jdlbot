@@ -190,7 +190,7 @@ my %siteMap = (
 	'/filters' => 'Filters',
 	'/history' => 'History',
 	'/config' => '<span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Configuration',
-	'/help' => 'Help',
+	'/help' => '<span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span> Help',
 );
 
 my %siteMapOrder = (

@@ -56,8 +56,10 @@ if ( $^O =~ /MSWin/ ){
 	
 	copy((file('build', 'win', 'jdlbot.ico'))->stringify, (file($builddir, 'jdlbot.ico'))->stringify);
 	
+	my $librariesToAdd = '-l libeay32__.dll -l ssleay32__.dll -l zlib1__.dll';
+	
 	chdir($builddir);
-	my $result = `pp -M attributes -M UNIVERSAL $filesToAdd $modulesToAdd -o jdlbotServer.exe jdlbotServer.pl`;
+	my $result = `pp -M attributes -M UNIVERSAL $librariesToAdd $filesToAdd $modulesToAdd -o jdlbotServer.exe jdlbotServer.pl`;
 	
 	# newer versions of pp don't support the --icon option any more, use Win32::Exe to manually replace the icon:
 #	$exe = Win32::Exe->new('jdlbotServer.exe');

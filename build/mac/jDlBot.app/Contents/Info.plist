@@ -9,7 +9,7 @@
 	<key>CFBundleExecutable</key>
 	<string>jDlBot</string>
 	<key>CFBundleGetInfoString</key>
-	<string>jDlBot 0.2.0 Copyright 2016 jdlbot/thawn</string>
+	<string>jDlBot 0.2.1 Copyright 2017 jdlbot/thawn</string>
 	<key>CFBundleIconFile</key>
 	<string>appIcon.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -35,7 +35,7 @@
 	<key>NSAppleScriptEnabled</key>
 	<false/>
 	<key>NSHumanReadableCopyright</key>
-	<string>jDlBot 0.2.0 Copyright 2016 jdlbot/thawn</string>
+	<string>jDlBot 0.2.1 Copyright 2017 jdlbot/thawn</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

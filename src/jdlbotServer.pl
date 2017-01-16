@@ -6,17 +6,21 @@ use warnings;
 use EV;
 use AnyEvent::Impl::EV;
 use AnyEvent::HTTPD;
+use Net::SSLeay;
 use AnyEvent::HTTP;
 
 use PAR;
 
 use Error qw(:try);
 
+use Data::Dumper;
+
 use Path::Class;
 use File::Path qw(make_path remove_tree);
 use Text::Template;
 use XML::FeedPP;
 use Web::Scraper;
+use LWP::Protocol::https;
 use LWP::Simple qw($ua get);
 use JSON::XS;
 use URI::Escape;
@@ -39,6 +43,7 @@ $AnyEvent::HTTP::USERAGENT = JdlBot::UA::getAgent();
 $ua->timeout(5);
 # Set the useragent to the same string as the Async HTTP module
 $ua->agent(JdlBot::UA::getAgent());
+$ua->ssl_opts( verify_hostname => 0 );
 
 # Declare globals... I know tisk tisk
 my($dbh, %config, $watchers, %templates, $static, %assets);
@@ -51,7 +56,7 @@ my($dbh, %config, $watchers, %templates, $static, %assets);
 	my $configfile = "";
 	my $versionFlag;
 	
-	my $version = Perl::Version->new("0.2.0");
+	my $version = Perl::Version->new("0.2.1");
 	
 	# Command line startup options
 	#  Usage: jdlbotServer(.exe) [-d|--directory=dir] [-p|--port=port#] [-c|--configdir=dir] [-v|--version]
@@ -128,7 +133,7 @@ sub fetchConfig {
 # Feed watchers
 $watchers = {};
 sub addWatcher {
-	my ($url, $interval, $follow_links) = @_;
+	my ($url, $protocol, $interval, $follow_links) = @_;
 
 	$watchers->{$url} = AnyEvent->timer(
 										after		=>	5,
@@ -141,7 +146,7 @@ sub addWatcher {
 											my $filters = $qh->fetchall_hashref('title');
 
 											if ( $qh->errstr || scalar keys %{ $filters } < 1 ){ return; }
-											http_get( "http://$url" , sub {
+											http_get( $protocol . $url , sub {
 													my ($body, $hdr) = @_;
 
 													if ($hdr->{Status} =~ /^2/) {
@@ -156,9 +161,9 @@ sub addWatcher {
 }
 
 {
-	my $feeds = $dbh->selectall_arrayref(q( SELECT url, interval, follow_links FROM feeds WHERE enabled='TRUE' ));
+	my $feeds = $dbh->selectall_arrayref(q( SELECT url, protocol, interval, follow_links FROM feeds WHERE enabled='TRUE' ));
 	foreach my $feed (@{$feeds}){
-		addWatcher($feed->[0], $feed->[1], $feed->[2]);
+		addWatcher(@{$feed});
 	}
 }
 
@@ -275,9 +280,12 @@ $httpd->reg_cb (
 			my $return = {'status' => 'failure'};
 			if( $req->parm('action') =~ /add|update|enable/){
 				my $feedParams = decode_json(uri_unescape($req->parm('data')));
-				$feedParams->{'url'} =~ s/^http:\/\///;
-				my $feedData = get('http://' . $feedParams->{'url'});
-				
+				$feedParams->{'protocol'} = $1 if $feedParams->{'url'} =~ /^(https?:\/\/)/i;
+				$feedParams->{'url'} =~ s/^https?:\/\///i;
+				if ( !$feedParams->{'protocol'} ) {
+					$feedParams->{'protocol'}='http://';
+				}
+				my $feedData = get($feedParams->{'protocol'} . $feedParams->{'url'});
 				if( $feedData ){
 					my $rssFeed;
 					my $parseError = 0;
@@ -290,8 +298,8 @@ $httpd->reg_cb (
 					if( defined($rssFeed) && $parseError != 1){
 						my $qh;
 						if ( $req->parm('action') eq 'add' ){
-							$qh = $dbh->prepare(q(INSERT INTO feeds VALUES ( ? , ? , ? , NULL, 'TRUE' )));
-							$qh->execute($feedParams->{'url'}, $feedParams->{'interval'}, $feedParams->{'follow_links'});
+							$qh = $dbh->prepare(q(INSERT INTO feeds VALUES ( ? , ? , ? , NULL, 'TRUE', ? )));
+							$qh->execute($feedParams->{'url'}, $feedParams->{'interval'}, $feedParams->{'follow_links'}, $feedParams->{'protocol'});
 							
 							if ( !$qh->errstr ){
 								my $qh = $dbh->prepare('SELECT * FROM feeds WHERE url=?');
@@ -343,7 +351,7 @@ $httpd->reg_cb (
 							
 						if(!$qh->errstr){
 							unless ( $feedParams->{'enabled'} eq 'FALSE' ){
-								addWatcher($feedParams->{'url'}, $feedParams->{'interval'}, $feedParams->{'follow_links'});
+								addWatcher($feedParams->{'url'}, $feedParams->{'protocol'}, $feedParams->{'interval'}, $feedParams->{'follow_links'});
 							}
 							$return->{'status'} = 'Success.';
 							$return->{'element'} = $feedParams;						
@@ -359,7 +367,7 @@ $httpd->reg_cb (
 				}
 			} elsif ( $req->parm('action') eq 'delete' ) {
 				my $feedParams = decode_json(uri_unescape($req->parm('data')));
-				$feedParams->{'uid'} =~ s/^http:\/\///;
+				$feedParams->{'uid'} =~ s/^http:\/\///i;
 				
 				$return->{'status'} = "Could not delete feed.  Incorrect url?";
 				my $qh = $dbh->prepare('DELETE FROM feeds WHERE url=?');

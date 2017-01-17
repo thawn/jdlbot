@@ -157,7 +157,7 @@ sub findLinks {
 	my $linkhosts = [];
 	if ( $filter->{'link_types'} ) {
 		my $regex = $filter->{'link_types'};
-		$linkhosts->[0] = $regex;
+		$linkhosts->[0] = [$regex];
 	}
 	else {
 		$linkhosts = $dbh->selectall_arrayref(

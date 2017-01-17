@@ -12,7 +12,7 @@ use File::Path qw(make_path remove_tree);
 use File::Find;
 use Cwd;
 
-my $modulesToAdd = "-M Moose::Meta::Object::Trait -M Package::Stash::XS -M URI::Find";
+my $modulesToAdd = "-M UNIVERSAL -M Moose::Meta::Object::Trait -M Package::Stash::XS -M URI::Find";
 my $filesToAdd = "";
 
 my $copyTo = (dir( cwd , 'build', 'current' ))->stringify;
@@ -59,7 +59,7 @@ if ( $^O =~ /MSWin/ ){
 	my $librariesToAdd = '-l libeay32__.dll -l ssleay32__.dll -l zlib1__.dll';
 	
 	chdir($builddir);
-	my $result = `pp -M attributes -M UNIVERSAL $librariesToAdd $filesToAdd $modulesToAdd -o jdlbotServer.exe jdlbotServer.pl`;
+	my $result = `pp -M attributes $librariesToAdd $filesToAdd $modulesToAdd -o jdlbotServer.exe jdlbotServer.pl`;
 	
 	# newer versions of pp don't support the --icon option any more, use Win32::Exe to manually replace the icon:
 #	$exe = Win32::Exe->new('jdlbotServer.exe');

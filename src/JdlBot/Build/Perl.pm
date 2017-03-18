@@ -5,6 +5,7 @@ use strict;
 use warnings;
 
 use File::Find;
+use Path::Class;
 require Exporter;
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(loadTemplates loadStatic loadAssets checkConfigFile openBrowser);
@@ -70,12 +71,27 @@ sub loadStatic {
 }
 
 sub checkConfigFile {
-	if ( -f 'config.sqlite' ) {
-		return 'config.sqlite';
+	my $configdir;
+	if ( $^O =~ /MSWin/ ) {
+		$configdir = dir($ENV{'APPDATA'} , 'jdlbot');
+		$configdir->mkpath();
+	}	elsif ( $^O eq 'darwin' ) {
+		$configdir = dir($ENV{'HOME'} , 'Library', 'jdlbot');
+		$configdir->mkpath();
+	} else {
+		$configdir = dir($ENV{'HOME'} , '.jdlbot');
+		$configdir->mkpath();
 	}
-	else {
-		return 0;
+	my $configfile = file( $configdir, 'config.sqlite');
+	if ( -f $configfile ) {
+		return $configfile->stringify();
 	}
+	elsif ( -f 'config.sqlite' ) {
+			if ( file('config.sqlite')->copy_to($configfile) ) {
+				return $configfile->stringify();
+			}
+	}
+	return 0;
 }
 
 sub openBrowser {

@@ -8,6 +8,9 @@
 					var html = '<li><a href="' + data.urls[i] + '" target="_blank">' + data.urls[i] + '</a></li>';
 					$id.find('ul.linklist').append(html);
 				}
+			} else if (i==='filter') {
+				$id.find('h4.panel-title').text(data.filter.match_title);
+				$id.find('p.feed-name').text("Source: " + data.filter.feeds);
 			} else {
 				$id.find('span[class=' + i + ']').html(data[i]);
 			}
@@ -101,7 +104,11 @@
 		<td><span class="date"></span></td>
 		<td><span class="title"></span> <span class="episode"></span>
 			<div class="panel panel-default edit" style="display: none;">
+				<div class="panel-heading">
+					<h4 class="panel-title">match_title</h4>
+				</div>
 				<div class="panel-body">
+					<p class="feed-name">feed_name</p>
 					<ul class="linklist" style="list-style: none;"></ul>
 				</div>
 			</div>

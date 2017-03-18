@@ -200,6 +200,7 @@ CONTENT: foreach my $count ( 0 .. $#{ $filter->{'matches'} } ) {
 				@$linksToProcess = uniq(@$linksToProcess);
 				my %filterConf=%$filter;
 				delete($filterConf{'matches'});
+				$filterConf{'match_title'}=$filter->{'matches'}->[$count]->{'title'};
 				if ( $filter->{'tv'} eq 'TRUE' ) {
 					unless ( $filter->{'new_tv_last_done'} ) {
 						$filter->{'new_tv_last_done'} = [];

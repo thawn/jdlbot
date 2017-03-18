@@ -42,10 +42,15 @@ INSERT INTO "filter_conf" ("conf","movie_filter1","movie_regex1","tv_filter1","t
 DROP TABLE "tmp";
 COMMIT;
 END
-				 '0.2.1'=> <<'END'
+				 '0.2.1'=> <<'END',
 BEGIN TRANSACTION;
 UPDATE "config" SET value='0.2.1' WHERE param='version';
 ALTER TABLE "feeds" ADD COLUMN "protocol" TEXT DEFAULT "http://";
+COMMIT;
+END
+				 '0.3.0'=> <<'END'
+BEGIN TRANSACTION;
+UPDATE "config" SET value='0.3.0' WHERE param='version';
 COMMIT;
 END
 				 };

@@ -484,6 +484,11 @@
 					<ul class="feed_list" style="list-style: none;"></ul>
 				</div>
 				<div class="form-group">
+					<label for="min_filesize">Minimum file size:</label> <input type="text" name="min_filesize"
+						class="form-control" data-toggle="tooltip" data-placement="left"
+						title="Minimum filesize. You cnan use unit such as KB MB or GB. You need to set a filesize pattern in the feed config for this field to have any effect.">
+				</div>
+				<div class="form-group">
 					<label for="link_types">Link Types:</label> <input type="text" name="link_types"
 						class="form-control" data-toggle="tooltip" data-placement="left"
 						title="This field is to override the default link types to use in the <a href='/linktypes'>Link Types list</a>.  If the field is used, multiple types must be | delimited.  For example: megaupload|hotfile">
@@ -553,6 +558,10 @@
 					<div class="form-group">
 						<label>Feeds:</label>
 						<ul class="feed_list" style="list-style: none;"></ul>
+					</div>
+					<div class="form-group">
+						<label for="min_filesize">Minimum file size:</label> <input type="text" name="min_filesize"
+							class="form-control">
 					</div>
 					<div class="form-group">
 						<label for="link_types">Link Types:</label> <input type="text"

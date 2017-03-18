@@ -56,7 +56,7 @@ my($dbh, %config, $watchers, %templates, $static, %assets);
 	my $configfile = "";
 	my $versionFlag;
 	
-	my $version = Perl::Version->new("0.3.0");
+	my $version = Perl::Version->new("0.4.0");
 	
 	# Command line startup options
 	#  Usage: jdlbotServer(.exe) [-d|--directory=dir] [-p|--port=port#] [-c|--configdir=dir] [-v|--version]
@@ -133,7 +133,7 @@ sub fetchConfig {
 # Feed watchers
 $watchers = {};
 sub addWatcher {
-	my ($url, $protocol, $interval, $follow_links) = @_;
+	my ($url, $protocol, $interval, $follow_links , $filesize_pattern) = @_;
 
 	$watchers->{$url} = AnyEvent->timer(
 										after		=>	5,
@@ -150,7 +150,7 @@ sub addWatcher {
 													my ($body, $hdr) = @_;
 
 													if ($hdr->{Status} =~ /^2/) {
-														JdlBot::Feed::scrape($url, $body, $filters, $follow_links, $dbh, \%config);
+														JdlBot::Feed::scrape($url, $body, $filters, $follow_links, $filesize_pattern, $dbh, \%config);
 													} else {
 														error("HTTP error, $hdr->{Status} $hdr->{Reason}\n" .
 																	"\tFailed to retrieve feed: $url", 1);
@@ -161,7 +161,7 @@ sub addWatcher {
 }
 
 {
-	my $feeds = $dbh->selectall_arrayref(q( SELECT url, protocol, interval, follow_links FROM feeds WHERE enabled='TRUE' ));
+	my $feeds = $dbh->selectall_arrayref(q( SELECT url, protocol, interval, follow_links, filesize_pattern FROM feeds WHERE enabled='TRUE' ));
 	foreach my $feed (@{$feeds}){
 		addWatcher(@{$feed});
 	}
@@ -298,8 +298,8 @@ $httpd->reg_cb (
 					if( defined($rssFeed) && $parseError != 1){
 						my $qh;
 						if ( $req->parm('action') eq 'add' ){
-							$qh = $dbh->prepare(q(INSERT INTO feeds VALUES ( ? , ? , ? , NULL, 'TRUE', ? )));
-							$qh->execute($feedParams->{'url'}, $feedParams->{'interval'}, $feedParams->{'follow_links'}, $feedParams->{'protocol'});
+							$qh = $dbh->prepare(q(INSERT INTO feeds VALUES ( ? , ? , ? , NULL, 'TRUE', ?, ? )));
+							$qh->execute($feedParams->{'url'}, $feedParams->{'interval'}, $feedParams->{'follow_links'}, $feedParams->{'protocol'}, $feedParams->{'filesize_pattern'});
 							
 							if ( !$qh->errstr ){
 								my $qh = $dbh->prepare('SELECT * FROM feeds WHERE url=?');
@@ -351,7 +351,7 @@ $httpd->reg_cb (
 							
 						if(!$qh->errstr){
 							unless ( $feedParams->{'enabled'} eq 'FALSE' ){
-								addWatcher($feedParams->{'url'}, $feedParams->{'protocol'}, $feedParams->{'interval'}, $feedParams->{'follow_links'});
+								addWatcher($feedParams->{'url'}, $feedParams->{'protocol'}, $feedParams->{'interval'}, $feedParams->{'follow_links'}, $feedParams->{'filesize_pattern'});
 							}
 							$return->{'status'} = 'Success.';
 							$return->{'element'} = $feedParams;						

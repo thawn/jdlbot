@@ -35,7 +35,7 @@
 	<key>NSAppleScriptEnabled</key>
 	<false/>
 	<key>NSHumanReadableCopyright</key>
-	<string>jDlBot 0.3.0 Copyright 2017 jdlbot/thawn</string>
+	<string>jDlBot 0.4.0 Copyright 2017 jdlbot/thawn</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

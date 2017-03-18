@@ -4,6 +4,8 @@ package JdlBot::Feed;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use XML::FeedPP;
 use Error qw(:try);
 use AnyEvent::HTTP;
@@ -17,8 +19,25 @@ use JdlBot::LinkHandler::JD2;
 
 $AnyEvent::HTTP::USERAGENT = JdlBot::UA::getAgent();
 
+sub read_filesize {
+	my ($input) = @_;
+	$input =~ /([\d\.]*)\s*(\D*)?/;
+	my $filesize = $1;
+	my $unit = $2;
+	if ($unit =~ /^k/i ) {
+		$filesize*=1024;
+	}
+	if ($unit =~ /^m/i ) {
+		$filesize*=1024**2;
+	}
+	if ($unit =~ /^g/i ) {
+		$filesize*=1024**3;
+	}
+	return $filesize;
+}
+
 sub scrape {
-	my ( $url, $feedData, $filters, $follow_links, $dbh, $config ) = @_;
+	my ( $url, $feedData, $filters, $follow_links, $filesize_pattern, $dbh, $config ) = @_;
 	my $rss;
 	my $parseError = 0;
 	try {
@@ -53,6 +72,17 @@ sub scrape {
 				}
 
 				if ($match) {
+					#print Dumper($filesize_pattern,$filters->{$filter});
+					if ( $filesize_pattern && $filters->{$filter}->{'min_filesize'} ) {
+						if ( $item->title() =~ /$filesize_pattern/i ) {
+							my $filesize	= read_filesize("$1$2");
+							my $minsize		= read_filesize($filters->{$filter}->{'min_filesize'});
+							print "$filesize > $minsize\n";
+							if ( $filesize < $minsize ) {
+								next;
+							}
+						}
+					}
 					if ( $filters->{$filter}->{'tv'} eq 'TRUE' ) {
 						my $item_title;
 						if ( $item->{'yt:videoId'} ) {

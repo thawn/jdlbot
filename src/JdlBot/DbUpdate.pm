@@ -48,9 +48,16 @@ UPDATE "config" SET value='0.2.1' WHERE param='version';
 ALTER TABLE "feeds" ADD COLUMN "protocol" TEXT DEFAULT "http://";
 COMMIT;
 END
-				 '0.3.0'=> <<'END'
+				 '0.3.0'=> <<'END',
 BEGIN TRANSACTION;
 UPDATE "config" SET value='0.3.0' WHERE param='version';
+COMMIT;
+END
+				 '0.4.0'=> <<'END'
+BEGIN TRANSACTION;
+UPDATE "config" SET value='0.4.0' WHERE param='version';
+ALTER TABLE "feeds" ADD COLUMN "filesize_pattern" TEXT DEFAULT "";
+ALTER TABLE "filters" ADD COLUMN "min_filesize" TEXT DEFAULT "";
 COMMIT;
 END
 				 };

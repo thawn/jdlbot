@@ -4,6 +4,8 @@ package JdlBot::Feed;
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 use XML::FeedPP;
 use Error qw(:try);
 use AnyEvent::HTTP;
@@ -54,7 +56,13 @@ sub scrape {
 
 				if ($match) {
 					if ( $filters->{$filter}->{'tv'} eq 'TRUE' ) {
-						$episodeID = JdlBot::TV::checkTvMatch( $item->title(),
+						my $item_title;
+						if ( $item->{'yt:videoId'} ) {
+							$item_title = $item->title() . " - " . $item->{'published'};
+						} else {
+							$item_title = $item->title();
+						}
+						$episodeID = JdlBot::TV::checkTvMatch( $item_title,
 							$filters->{$filter}, $dbh );
 						unless ($episodeID) {
 							next;

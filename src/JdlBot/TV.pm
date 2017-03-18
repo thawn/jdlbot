@@ -99,9 +99,12 @@ sub determineTvType {
 	if ( $s =~ /s(\d{2})e(\d{2})/i ){
 		$tv_info->{'type'} = 's';
 		$tv_info->{'info'} = { 's' => $1, 'e' => $2 };
+	} elsif ( $s =~ /(\d{4}).?(\d{2}).?(\d{2})T(\d{2}):(\d{2}):(\d{2})/ ){
+		$tv_info->{'type'} = 'd';
+		$tv_info->{'info'} = { 'd' => "$1$2$3$4$5$6", 's' => "$1-$2-$3T$4:$5:$6" };
 	} elsif ( $s =~ /(\d{4}).?(\d{2}).?(\d{2})/ ){
 		$tv_info->{'type'} = 'd';
-		$tv_info->{'info'} = { 'd' => "$1$2$3", 's' => "$1.$2.$3" };
+		$tv_info->{'info'} = { 'd' => "$1$2$3", 's' => "$1-$2-$3" };
 	} else {
 		$tv_info = undef;
 	}

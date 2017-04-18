@@ -4,8 +4,6 @@ package JdlBot::Feed;
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 use XML::FeedPP;
 use Error qw(:try);
 use AnyEvent::HTTP;
@@ -72,7 +70,6 @@ sub scrape {
 				}
 
 				if ($match) {
-					#print Dumper($filesize_pattern,$filters->{$filter});
 					if ( $filesize_pattern && $filters->{$filter}->{'min_filesize'} ) {
 						if ( $item->title() =~ /$filesize_pattern/i ) {
 							my $filesize	= read_filesize("$1$2");
@@ -124,8 +121,12 @@ sub scrape {
 										my $match = 0;
 										if ( $filters->{$filter}->{'regex2'} eq 'TRUE' ) {
 											my $reFilter = $filters->{$filter}->{'filter2'};
-											if ( $body =~ m/$reFilter/ ) {
+											if ( my @filtered_content = $body =~ m/$reFilter/s ) {
 												$match = 1;
+												# if the pattern contains parentheses groups, extract only the grouped parts
+												if ( $1 ) {
+													$body = join("",@filtered_content);
+												}
 											}
 										}
 										else {

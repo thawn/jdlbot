@@ -56,7 +56,7 @@ my($dbh, %config, $watchers, %templates, $static, %assets);
 	my $configfile = "";
 	my $versionFlag;
 	
-	my $version = Perl::Version->new("0.5.0");
+	my $version = Perl::Version->new("0.5.1");
 	
 	# Command line startup options
 	#  Usage: jdlbotServer(.exe) [-d|--directory=dir] [-p|--port=port#] [-c|--configdir=dir] [-v|--version]
@@ -516,22 +516,10 @@ $httpd->reg_cb (
 					$qh->execute($filterParams->{'uid'});
 					$return->{'element'} = $filterParams;						
 
-				} elsif ( $req->parm('action') eq 'config' ){
-					$return->{'status'} = "Could not save configuration data.";
-					my $old_conf = $filterParams->{'old_conf'};
-					delete($filterParams->{'old_conf'});
-					my @fields = sort keys %$filterParams;
-					my @values = @{$filterParams}{@fields};
-					$qh = $dbh->prepare(sprintf('UPDATE filter_conf SET %s=? WHERE conf=?', join("=?, ", @fields)));
-					push(@values, $old_conf);
-					$filterParams->{'old_conf'} = $old_conf;
-					$qh->execute(@values);
-					$return->{'element'} = $filterParams;
-
 				} elsif ( $req->parm('action') eq 'getconfig' ){
 					$return->{'status'} = "Could not fetch filter configuration.";
 
-					$return->{'filter_conf'} = $dbh->selectall_arrayref(q( SELECT * FROM filter_conf ORDER BY conf ), { Slice => {} });
+					$return->{'filter_conf'} = $dbh->selectall_arrayref(q( SELECT * FROM filters WHERE title LIKE '%\_config' ESCAPE '\' ORDER BY title ), { Slice => {} });
 
 				}
 
@@ -543,7 +531,7 @@ $httpd->reg_cb (
 			} elsif ( $req->parm('action') =~ /^(list)$/ ){
 				$return->{'status'} = "Could not fetch list of filters.";
 
-				$return->{'list'} = $dbh->selectall_arrayref(q( SELECT * FROM filters ORDER BY title ), { Slice => {} });
+				$return->{'list'} = $dbh->selectall_arrayref(q( SELECT * FROM filters WHERE title NOT LIKE '%\_config' ESCAPE '\' ORDER BY title ), { Slice => {} });
 
 				if(!$dbh->errstr){
 					$return->{'status'} = 'Success.';

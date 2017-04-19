@@ -60,7 +60,7 @@ ALTER TABLE "feeds" ADD COLUMN "filesize_pattern" TEXT DEFAULT "";
 ALTER TABLE "filters" ADD COLUMN "min_filesize" TEXT DEFAULT "";
 COMMIT;
 END
-				 '0.5.0'=> <<'END'
+				 '0.5.0'=> <<'END',
 BEGIN TRANSACTION;
 UPDATE "config" SET value='0.5.0' WHERE param='version';
 ALTER TABLE "filters" RENAME TO "tmp";
@@ -84,6 +84,14 @@ CREATE TABLE "filters" (
 INSERT INTO "filters" ("title","filter1","regex1","filter2","regex2","feeds","link_filter","tv","tv_last","autostart","enabled","stop_found","path","min_filesize")
 	SELECT "title","filter1","regex1","filter2","regex2","feeds","link_types","tv","tv_last","autostart","enabled","stop_found","path","min_filesize" FROM "tmp";
 DROP TABLE "tmp";
+COMMIT;
+END
+				 '0.5.1'=> <<'END'
+BEGIN TRANSACTION;
+UPDATE "config" SET value='0.5.1' WHERE param='version';
+INSERT INTO "filters" ("title","filter1","regex1","filter2","regex2","path") SELECT "tv_config","tv_filter1","tv_regex1","tv_filter2","tv_regex2","tv_path" FROM "filter_conf" WHERE "conf" LIKE "default";
+INSERT INTO "filters" ("title","filter1","regex1","filter2","regex2","path") SELECT "movie_config","movie_filter1","movie_regex1","movie_filter2","movie_regex2","movie_path" FROM "filter_conf" WHERE "conf" LIKE "default";
+DROP TABLE "filter_conf";
 COMMIT;
 END
 				 };

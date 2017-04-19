@@ -397,7 +397,7 @@
 							<label for="movie_path">Default Save Path:</label> <input type="text"
 								name="movie_path" class="form-control" data-toggle="tooltip"
 								data-placement="left"
-								title="Default expression for TV shows. %t will be automatically replaced with the filter title.">
+								title="Default save path for movies. %t will be automatically replaced with the filter title.">
 						</div>
 						<div class="form-group tv" style="display: none;">
 							<label for="tv_filter1">Filter 1:</label>
@@ -489,9 +489,9 @@
 						title="Minimum filesize. You cnan use unit such as KB MB or GB. You need to set a filesize pattern in the feed config for this field to have any effect.">
 				</div>
 				<div class="form-group">
-					<label for="link_types">Link Types:</label> <input type="text" name="link_types"
+					<label for="link_filter">Link Filter:</label> <input type="text" name="link_filter"
 						class="form-control" data-toggle="tooltip" data-placement="left"
-						title="This field is to override the default link types to use in the <a href='/linktypes'>Link Types list</a>.  If the field is used, multiple types must be | delimited.  For example: megaupload|hotfile">
+						title="A final filter applied to the link url after all other filters and link host checks. For example: .*(720p|1080p).* would only keep links containing 720p or 1080p anywhere in the url.">
 				</div>
 				<div class="checkbox stop_found">
 					<label><input type="checkbox" name="stop_found" data-toggle="tooltip"
@@ -564,8 +564,8 @@
 							class="form-control">
 					</div>
 					<div class="form-group">
-						<label for="link_types">Link Types:</label> <input type="text"
-							name="link_types" class="form-control">
+						<label for="link_filter">Link Filter:</label> <input type="text"
+							name="link_filter" class="form-control">
 					</div>
 					<div class="checkbox stop_found">
 						<label><input type="checkbox" name="stop_found"> Disable when

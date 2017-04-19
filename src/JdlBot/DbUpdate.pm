@@ -53,11 +53,37 @@ BEGIN TRANSACTION;
 UPDATE "config" SET value='0.3.0' WHERE param='version';
 COMMIT;
 END
-				 '0.4.0'=> <<'END'
+				 '0.4.0'=> <<'END',
 BEGIN TRANSACTION;
 UPDATE "config" SET value='0.4.0' WHERE param='version';
 ALTER TABLE "feeds" ADD COLUMN "filesize_pattern" TEXT DEFAULT "";
 ALTER TABLE "filters" ADD COLUMN "min_filesize" TEXT DEFAULT "";
+COMMIT;
+END
+				 '0.5.0'=> <<'END'
+BEGIN TRANSACTION;
+UPDATE "config" SET value='0.5.0' WHERE param='version';
+ALTER TABLE "filters" RENAME TO "tmp";
+CREATE TABLE "filters" (
+	"title"	TEXT NOT NULL UNIQUE,
+	"filter1"	TEXT NOT NULL,
+	"regex1"	BOOL NOT NULL DEFAULT FALSE,
+	"filter2"	TEXT NOT NULL DEFAULT "",
+	"regex2"	BOOL NOT NULL DEFAULT FALSE,
+	"feeds"	TEXT NOT NULL DEFAULT "",
+	"link_filter"	TEXT NOT NULL DEFAULT "",
+	"tv"	BOOL NOT NULL DEFAULT FALSE,
+	"tv_last"	TEXT NOT NULL DEFAULT "",
+	"autostart"	BOOL NOT NULL DEFAULT TRUE,
+	"enabled"	BOOL NOT NULL DEFAULT TRUE,
+	"stop_found"	BOOL NOT NULL DEFAULT TRUE,
+	"path"	TEXT NOT NULL DEFAULT "",
+	"min_filesize"	TEXT NOT NULL DEFAULT "",
+	PRIMARY KEY("title")
+);
+INSERT INTO "filters" ("title","filter1","regex1","filter2","regex2","feeds","link_filter","tv","tv_last","autostart","enabled","stop_found","path","min_filesize")
+	SELECT "title","filter1","regex1","filter2","regex2","feeds","link_types","tv","tv_last","autostart","enabled","stop_found","path","min_filesize" FROM "tmp";
+DROP TABLE "tmp";
 COMMIT;
 END
 				 };

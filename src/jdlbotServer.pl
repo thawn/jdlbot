@@ -56,7 +56,7 @@ my($dbh, %config, $watchers, %templates, $static, %assets);
 	my $configfile = "";
 	my $versionFlag;
 	
-	my $version = Perl::Version->new("0.4.0");
+	my $version = Perl::Version->new("0.5.0");
 	
 	# Command line startup options
 	#  Usage: jdlbotServer(.exe) [-d|--directory=dir] [-p|--port=port#] [-c|--configdir=dir] [-v|--version]

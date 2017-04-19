@@ -191,15 +191,8 @@ sub scrape {
 sub findLinks {
 	my ( $filter, $dbh, $config ) = @_;
 
-	my $linkhosts = [];
-	if ( $filter->{'link_types'} ) {
-		my $regex = $filter->{'link_types'};
-		$linkhosts->[0] = [$regex];
-	}
-	else {
-		$linkhosts = $dbh->selectall_arrayref(
+	my $linkhosts = $dbh->selectall_arrayref(
 			"SELECT linkhost FROM linktypes WHERE enabled='TRUE' ORDER BY priority");
-	}
 
 CONTENT: foreach my $count ( 0 .. $#{ $filter->{'matches'} } ) {
 		my @links;
@@ -225,10 +218,7 @@ CONTENT: foreach my $count ( 0 .. $#{ $filter->{'matches'} } ) {
 			foreach my $link (@links) {
 				my ($linkType) = ( $link =~ /^https?:\/\/([^\/]+)\// );
 				if ( !$linkType ) { next; }
-
-# If the link type is appropriate;
-#   This needs to be replaced by a function that checks against a list of domains
-				if ( $linkType =~ $regex ) {
+				if ( $linkType =~ $regex && ( !$filter->{'link_filter'} || $link =~ /$filter->{'link_filter'}/ ) ) {
 					push( @$linksToProcess, $link );
 				}
 			}

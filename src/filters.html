@@ -164,11 +164,17 @@
 			checkAutoFilter($id,i);
 		}
 		$id.find('input[name=old_title]').val(data.title);
+		$id.find('input').data('item-id', $id);
+		$id.find('input').each(function() {
+			$(this).attr('data-placement','right');
+		})
+		$id.find('.filterswitch a').data('item-id', $id);
+		var modalId = 'modal-' + $id.prop('id');
+		$id.find('div.modal').prop('id',modalId);
 		$id.find('button').each(function() {
 			$(this).data('item-id', $id);
+			$(this).attr('data-target','#' + modalId);
 		});
-		$id.find('input').data('item-id', $id);
-		$id.find('.filterswitch a').data('item-id', $id);
 	}
 
 	var checkAutoFilter = function($id, field) {
@@ -277,9 +283,11 @@
 	var prepareElementTemplate = function() {
 		var $template=$('#new-element-form').clone();
 		$template.prop('id','');
-		$template.find('button#add').replaceWith($('#element-template').find('div.btn-group'));
+		$template.removeClass();
+		$template.addClass('modal-body');
+		$template.find('button#add').replaceWith($('#element-template').find('div.save-cancel'));
 		$template.find('input[name=title]').after('<input type="hidden" name="old_title" value="">')
-		$('#element-template').find('div.panel-body').replaceWith($template);
+		$('#element-template').find('div.modal-body').replaceWith($template);
 	}
 
 	var prepareConfig = function(title) {
@@ -371,6 +379,7 @@
 							<th style="white-space: nowrap;">Enable</th>
 							<th style="width: 99%;">Filter</th>
 							<th style="white-space: nowrap;">Edit</th>
+							<th style="white-space: nowrap;">Delete</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -390,6 +399,9 @@
 				<div class="modal-header">
 					<h4 id="configModalLabel" class="modal-title">
 						Filter configuration
+		        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		          <span aria-hidden="true">&times;</span>
+	  	      </button>
 					</h4>
 				</div>
 					<div id="config" class="modal-body">
@@ -488,21 +500,32 @@
 	<tr id="element-template" style="display: none;">
 		<td><input type="checkbox" name="enabled"></td>
 		<td class="filter-item"><span class="item-title"></span>
-			<div class="panel panel-default edit" style="display: none;">
-				<div class="panel-heading">
-					<h4 class="panel-title">Edit filter:</h4>
-				</div>
-				<div class="panel-body">
-					<div class="btn-group" role="group" aria-label="save cancel delete button group">
-						<button type="button" class="btn btn-primary update">Update</button>
-						<button type="button" class="btn btn-danger delete">Delete</button>
-						<button type="button" class="btn btn-info cancel">Cancel</button>
+			<div class="modal fade edit">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title">Edit filter:
+				 	      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				          <span aria-hidden="true">&times;</span>
+				        </button>
+				       </h4>
+						</div>
+						<div class="modal-body">
+							<div class="btn-group save-cancel" role="group" aria-label="save cancel button group">
+								<button type="button" class="btn btn-primary update" data-dismiss="modal">Save</button>
+								<button type="button" class="btn btn-info cancel" data-dismiss="modal">Cancel</button>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div></td>
 		<td>
-			<button type="button" class="btn btn-info btn-xs hidden-xs edit-button" data-placement="top">Edit</button>
-			<button type="button" class="btn btn-info visible-xs-block edit-button" data-placement="top">Edit</button>
+			<button type="button" class="btn btn-info btn-xs hidden-xs edit-button" data-placement="top" data-toggle="modal" data-target="#modal-el0">Edit</button>
+			<button type="button" class="btn btn-info visible-xs-block edit-button" data-placement="top" data-toggle="modal" data-target="#modal-el0">Edit</button>
+		</td>
+		<td>
+			<button type="button" class="btn btn-danger btn-xs hidden-xs delete" data-dismiss="modal">Delete</button>
+			<button type="button" class="btn btn-danger visible-xs-block delete" data-dismiss="modal">Delete</button>
 		</td>
 	</tr>
 </table>

@@ -304,9 +304,6 @@
 				prepareElementTemplate();
 				//fetch the configuration from the database
 				getConfig();
-				// Add tips for the new filter input
-				$('[data-toggle="tooltip"]').tooltip();
-
 				// Add event handlers for everything.  Most are delegated at the bubble-up stage.
 				$('#filters').on('change', ':checkbox[name=enabled]', function() {
 					updateElement($(this).data('item-id'));
@@ -342,12 +339,13 @@
 					switchFilterType($(this));
 				});
 				$('#add').click(function() {
-					updateElement($(this).parent());
+					addElement();
 				});
 				$('#config').on('click','button.config-save',function() {
 					$(this).parent().find('div.config').each(function() {
 						updateElement($( this ));
 					});
+					$(this).parents('div.panel-group').find('a[data-toggle=collapse]').click;
 				});
 				$('.movie-filter a').click();
 				$('.movie_config a').click();
@@ -355,7 +353,9 @@
 
 				// Grab the list of feeds, then grab the list of filters.
 				listFeeds(function() {
-					listElements(true);
+					listElements(true, function() {
+						$('[data-toggle="tooltip"]').tooltip();						
+					});
 					$('#new-element-form').find('ul.feed_list').find('input[type=checkbox]')
 							.prop('checked', true);
 				});
@@ -382,13 +382,13 @@
 	<div class="col-sm-5">
 		<div class="panel-group">
 			<div class="panel panel-default">
-				<div class="panel-heading">
+				<div class="panel-heading"  style="background-color: #b0d8ea;">
 					<h4 class="panel-title">
 						<a role="button" data-toggle="collapse" href="#config">Filter configuration</a>
 					</h4>
 				</div>
 				<div id="config" class="panel-collapse collapse">
-					<div class="panel-body">
+					<div class="panel-body" style="background-color: #e9f8ff;">
 						<ul class="nav nav-tabs nav-justified">
 							<li class="filterswitch movie_config" class="active"><a>Movies</a></li>
 							<li class="filterswitch tv_config"><a>TV series</a></li>

@@ -81,6 +81,9 @@ CREATE TABLE "filters" (
 	"min_filesize"	TEXT NOT NULL DEFAULT "",
 	PRIMARY KEY("title")
 );
+UPDATE tmp SET path='' WHERE path IS NULL;
+UPDATE tmp SET tv_last='' WHERE tv_last IS NULL;
+UPDATE tmp SET min_filesize='' WHERE min_filesize IS NULL;
 INSERT INTO "filters" ("title","filter1","regex1","filter2","regex2","feeds","link_filter","tv","tv_last","autostart","enabled","stop_found","path","min_filesize")
 	SELECT "title","filter1","regex1","filter2","regex2","feeds","link_types","tv","tv_last","autostart","enabled","stop_found","path","min_filesize" FROM "tmp";
 DROP TABLE "tmp";
@@ -89,6 +92,12 @@ END
 				 '0.5.1'=> <<'END'
 BEGIN TRANSACTION;
 UPDATE "config" SET value='0.5.1' WHERE param='version';
+UPDATE filter_conf SET tv_filter1='' WHERE tv_filter1 IS NULL;
+UPDATE filter_conf SET tv_filter2='' WHERE tv_filter2 IS NULL;
+UPDATE filter_conf SET tv_path='' WHERE tv_path IS NULL;
+UPDATE filter_conf SET movie_filter1='' WHERE movie_filter1 IS NULL;
+UPDATE filter_conf SET movie_filter2='' WHERE movie_filter2 IS NULL;
+UPDATE filter_conf SET movie_path='' WHERE movie_path IS NULL;
 INSERT INTO "filters" ("title","filter1","regex1","filter2","regex2","path") SELECT "tv_config","tv_filter1","tv_regex1","tv_filter2","tv_regex2","tv_path" FROM "filter_conf" WHERE "conf" LIKE "default";
 INSERT INTO "filters" ("title","filter1","regex1","filter2","regex2","path") SELECT "movie_config","movie_filter1","movie_regex1","movie_filter2","movie_regex2","movie_path" FROM "filter_conf" WHERE "conf" LIKE "default";
 DROP TABLE "filter_conf";

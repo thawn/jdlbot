@@ -14,9 +14,13 @@ my $version_str = "0.5.1";
 GetOptions("version=s" => \$version_str); # Get the version number
 my $version = Perl::Version->new($version_str);
 
+print STDOUT "Updating files to version $version:\n";
+
+
 sub replace_version {
 	my ($path,$regex)=@_;
 	my $file = file($path);
+	print STDOUT "  Updating ".$file->basename."\n";
 	my $data = $file->slurp();
 	$data =~ s/$regex/$1$version$2/g;
 	#print $data;
@@ -44,3 +48,4 @@ if ( $version->numify > $dbVersion->numify ){
 
 	print STDOUT "Update successful.\n";
 }
+print STDOUT "Update done.\n";

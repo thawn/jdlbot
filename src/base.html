@@ -149,6 +149,16 @@ var listElements = function(clear,callback) \{
 					$('#element-list tbody').append(alert);
 				\});
 \}
+var prepareElementTemplate = function(keyField) \{
+	var $template=$('#new-element-form').clone();
+	$template.prop('id','');
+	$template.removeClass();
+	$template.addClass('modal-body');
+	$template.find('button#add').replaceWith($('#element-template').find('div.save-cancel'));
+	$template.find('input[name='+keyField+']').after('<input type="hidden" name="old_'+keyField+'" value="">')
+	$('#element-template').find('div.modal-body').replaceWith($template);
+\}
+
 
 </script>
 </head>

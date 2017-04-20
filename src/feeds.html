@@ -15,7 +15,7 @@
 
 	
 	var fillInElement = function($id, data) {
-		$id.find('td.feed-item span').html(
+		$id.find('td.feed-item span.title').html(
 				'<a href="http://' + data.url + '" target="_blank">' + data.url
 						+ ' -- Interval: ' + data.interval + '</a>');
 		for ( var field in data) {
@@ -34,10 +34,19 @@
 		$id.find('input').each(function() {
 			$(this).data('item-id', $id);
 		});
+		var modalId = 'modal-' + $id.prop('id');
+		$id.find('div.modal').prop('id',modalId);
+		$id.find('button').each(function() {
+			$(this).data('item-id', $id);
+			$(this).attr('data-target','#' + modalId);
+		});
 	}
 
 		var elementCount = 0;
 	$(document).ready(function() {
+		//prepare the element template from the new element mask
+		prepareElementTemplate('url');
+
 		$('[data-toggle="tooltip"]').tooltip();
 
 		$('#add').click(function() {
@@ -57,7 +66,9 @@
 			updateElement($(this).data('item-id'));
 		});
 		$('#element-list').on('click', 'button.delete', function() {
-			deleteElement($(this).data('item-id'),$(this).data('item-id').find('input[name=url]').val());
+			$(this).data('item-id').find('div.modal').on('hidden.bs.modal', function(){
+				deleteElement($(this).parents('tr'),$(this).find('input[name=old_url]').val());
+			});			
 		});
 		$('#element-list').on('click', 'button.cancel', function() {
 			toggleShow($(this).data('item-id'));
@@ -120,37 +131,31 @@
 <table style="display: none;">
 	<tr id="element-template" style="display: none;">
 		<td><input type="checkbox" name="enabled"></td>
-		<td class="feed-item"><span></span>
-			<div class="panel panel-default edit" style="display: none;">
-				<div class="panel-heading"><h4 class="panel-title">Edit feed:</h4></div>
-				<div class="panel-body">
-					<div class="form-group">
-						<label for="url">Url:</label> <input type="text" name="url"
-							class="form-control" value=""> <input type="hidden" name="old_url"
-							value=""> <input type="hidden" name="protocol" value="http://">
-					</div>
-					<div class="form-group">
-						<label for="interval">Interval (min):</label> <input type="number"
-							name="interval" class="form-control" value="">
-					</div>
-					<div class="form-group">
-						<label for="interval">Regex pattern to extract filesize from title:</label> <input type="text"
-							name="filesize_pattern" class="form-control" value="">
-					</div>
-					<div class="checkbox">
-						<label><input type="checkbox" name="follow_links"> Follow
-							Links. </label>
-					</div>
-					<div class="btn-group" role="group" aria-label="save cancel delete button group">
-						<button type="button" class="btn btn-primary update">Update</button>
-						<button type="button" class="btn btn-danger delete">Delete</button>
-						<button type="button" class="btn btn-info cancel">Cancel</button>
+		<td class="feed-item"><span class="title"></span>
+			<div class="modal fade edit">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title">
+								Edit feed:
+				 	      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				          <span aria-hidden="true">&times;</span>
+				        </button>
+							</h4>
+						</div>
+						<div class="modal-body">
+							<div class="btn-group save-cancel" role="group" aria-label="save cancel delete button group">
+								<button type="button" class="btn btn-primary update" data-dismiss="modal">Update</button>
+								<button type="button" class="btn btn-danger delete" data-dismiss="modal">Delete</button>
+								<button type="button" class="btn btn-info cancel" data-dismiss="modal">Cancel</button>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div></td>
 		<td>
-			<button type="button" class="btn btn-info btn-xs hidden-xs edit-button" data-placement="top">Edit</button>
-			<button type="button" class="btn btn-info visible-xs-block edit-button" data-placement="top">Edit</button>
+			<button type="button" class="btn btn-info btn-xs hidden-xs edit-button" data-placement="top" data-toggle="modal" data-target="#modal-el0">Edit</button>
+			<button type="button" class="btn btn-info visible-xs-block edit-button" data-placement="top" data-toggle="modal" data-target="#modal-el0">Edit</button>
 		</td>
 		<td>
 			<button type="button" class="btn btn-primary btn-xs hidden-xs scrape" data-placement="top">Scrape Now</button>

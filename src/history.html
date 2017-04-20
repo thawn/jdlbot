@@ -9,14 +9,17 @@
 					$id.find('ul.linklist').append(html);
 				}
 			} else if (i==='filter') {
-				$id.find('h4.panel-title').text(data.filter.match_title);
+				$id.find('span.title').text(data.filter.match_title);
 				$id.find('p.feed-name').text("Source: " + data.filter.feeds);
 			} else {
 				$id.find('span[class=' + i + ']').html(data[i]);
 			}
 		}
+		var modalId = 'modal-' + $id.prop('id');
+		$id.find('div.modal').prop('id',modalId);
 		$id.find('button').each(function() {
 			$(this).data('item-id', $id);
+			$(this).attr('data-target','#' + modalId);
 		});
 	}
 
@@ -103,20 +106,28 @@
 	<tr id="element-template" class="history-item" style="display: none;">
 		<td><span class="date"></span></td>
 		<td><span class="title"></span> <span class="episode"></span>
-			<div class="panel panel-default edit" style="display: none;">
-				<div class="panel-heading">
-					<h4 class="panel-title">match_title</h4>
-				</div>
-				<div class="panel-body">
-					<p class="feed-name">feed_name</p>
-					<ul class="linklist" style="list-style: none;"></ul>
+			<div class="modal fade edit" style="display: none;">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title"><span class="title"></span>
+				 	      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				          <span aria-hidden="true">&times;</span>
+				        </button>
+							</h4>
+						</div>
+						<div class="modal-body">
+							<p class="feed-name">feed_name</p>
+							<ul class="linklist" style="list-style: none;"></ul>
+						</div>
+					</div>
 				</div>
 			</div>
 		</td>
 		<td><span class="status"></span></td>
 		<td>
-			<button type="button" class="btn btn-info btn-xs hidden-xs details">Details</button>
-			<button type="button" class="btn btn-info visible-xs-block details">Details</button>
+			<button type="button" class="btn btn-info btn-xs hidden-xs details" data-toggle="modal" data-target="#modal-el0">Details</button>
+			<button type="button" class="btn btn-info visible-xs-block details" data-toggle="modal" data-target="#modal-el0">Details</button>
 		</td>
 		<td>
 			<button type="button" class="btn btn-primary btn-xs hidden-xs re-dl" data-placement="left">Re-download</button>

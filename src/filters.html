@@ -280,16 +280,6 @@
 
 	}
 	
-	var prepareElementTemplate = function() {
-		var $template=$('#new-element-form').clone();
-		$template.prop('id','');
-		$template.removeClass();
-		$template.addClass('modal-body');
-		$template.find('button#add').replaceWith($('#element-template').find('div.save-cancel'));
-		$template.find('input[name=title]').after('<input type="hidden" name="old_title" value="">')
-		$('#element-template').find('div.modal-body').replaceWith($template);
-	}
-
 	var prepareConfig = function(title) {
 		var $template=$('#new-element-form').clone();
 		$template.prop('id',title);
@@ -309,7 +299,7 @@
 	$(document).ready(
 			function() {
 				//prepare the element template from the new element mask
-				prepareElementTemplate();
+				prepareElementTemplate('title');
 				//fetch the configuration from the database
 				getConfig();
 				// Add event handlers for everything.  Most are delegated at the bubble-up stage.
@@ -320,13 +310,11 @@
 					updateElement($(this).data('item-id'));
 					toggleShow($(this).data('item-id'));
 				});
-				$('#filters').on(
-						'click',
-						'button.delete',
-						function() {
-							deleteElement($(this).data('item-id'), $(this).data('item-id').find(
-									'input[name=old_title]').val());
-						});
+				$('#filters').on('click','button.delete',function() {
+					$(this).data('item-id').find('div.modal').on('hidden.bs.modal', function(){
+						deleteElement($(this).parents('tr'),$(this).find('input[name=old_title]').val());
+					});			
+				});
 				$('#filters').on('click', 'button.cancel', function() {
 					toggleShow($(this).data('item-id'));
 				});
@@ -379,7 +367,6 @@
 							<th style="white-space: nowrap;">Enable</th>
 							<th style="width: 99%;">Filter</th>
 							<th style="white-space: nowrap;">Edit</th>
-							<th style="white-space: nowrap;">Delete</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -513,6 +500,7 @@
 						<div class="modal-body">
 							<div class="btn-group save-cancel" role="group" aria-label="save cancel button group">
 								<button type="button" class="btn btn-primary update" data-dismiss="modal">Save</button>
+								<button type="button" class="btn btn-danger delete" data-dismiss="modal">Delete</button>
 								<button type="button" class="btn btn-info cancel" data-dismiss="modal">Cancel</button>
 							</div>
 						</div>
@@ -522,10 +510,6 @@
 		<td>
 			<button type="button" class="btn btn-info btn-xs hidden-xs edit-button" data-placement="top" data-toggle="modal" data-target="#modal-el0">Edit</button>
 			<button type="button" class="btn btn-info visible-xs-block edit-button" data-placement="top" data-toggle="modal" data-target="#modal-el0">Edit</button>
-		</td>
-		<td>
-			<button type="button" class="btn btn-danger btn-xs hidden-xs delete" data-dismiss="modal">Delete</button>
-			<button type="button" class="btn btn-danger visible-xs-block delete" data-dismiss="modal">Delete</button>
 		</td>
 	</tr>
 </table>

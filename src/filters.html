@@ -381,24 +381,29 @@
 	</div>
 	<div class="col-sm-5">
 		<div class="panel-group">
-			<div class="panel panel-default">
-				<div class="panel-heading"  style="background-color: #b0d8ea;">
-					<h4 class="panel-title">
-						<a role="button" data-toggle="collapse" href="#config">Filter configuration</a>
+			<button type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#filter-config">
+  			Configure filters
+			</button>
+			<div id="filter-config" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="configModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 id="configModalLabel" class="modal-title">
+						Filter configuration
 					</h4>
 				</div>
-				<div id="config" class="panel-collapse collapse">
-					<div class="panel-body" style="background-color: #e9f8ff;">
+					<div id="config" class="modal-body">
 						<ul class="nav nav-tabs nav-justified">
 							<li class="filterswitch movie_config" class="active"><a>Movies</a></li>
 							<li class="filterswitch tv_config"><a>TV series</a></li>
 						</ul>
 						<p id="config-explanation">Here you can define default values that will be automatically inserted into the respective fields of a filter. Empty values will be ignored.
 							%t will be replaced with the filter title.</p>
-						<button type="button" class="btn btn-primary config-save" data-toggle="popover">Save</button>
+						<button type="button" class="btn btn-primary config-save" data-toggle="popover" data-dismiss="modal">Save</button>
 					</div>
 				</div>
 			</div>
+		</div>
 		</div>
 		<div class="panel panel-default edit">
 			<div class="panel-heading">

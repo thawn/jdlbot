@@ -89,7 +89,7 @@ INSERT INTO "filters" ("title","filter1","regex1","filter2","regex2","feeds","li
 DROP TABLE "tmp";
 COMMIT;
 END
-				 '0.5.1'=> <<'END'
+				 '0.5.1'=> <<'END',
 BEGIN TRANSACTION;
 UPDATE "config" SET value='0.5.1' WHERE param='version';
 UPDATE filter_conf SET tv_filter1='' WHERE tv_filter1 IS NULL;
@@ -101,6 +101,16 @@ UPDATE filter_conf SET movie_path='' WHERE movie_path IS NULL;
 INSERT INTO "filters" ("title","filter1","regex1","filter2","regex2","path") SELECT "tv_config","tv_filter1","tv_regex1","tv_filter2","tv_regex2","tv_path" FROM "filter_conf" WHERE "conf" LIKE "default";
 INSERT INTO "filters" ("title","filter1","regex1","filter2","regex2","path") SELECT "movie_config","movie_filter1","movie_regex1","movie_filter2","movie_regex2","movie_path" FROM "filter_conf" WHERE "conf" LIKE "default";
 DROP TABLE "filter_conf";
+COMMIT;
+END
+				 '0.5.2'=> <<'END',
+BEGIN TRANSACTION;
+UPDATE "config" SET value='0.5.2' WHERE param='version';
+CREATE TABLE "history" (
+	"digest"	TEXT NOT NULL UNIQUE,
+	"feed"	TEXT NOT NULL,
+	PRIMARY KEY("digest")
+);
 COMMIT;
 END
 				 };

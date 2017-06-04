@@ -7,6 +7,7 @@ use Path::Class;
 use Getopt::Long;
 use Perl::Version;
 use DBI;
+use DBIx::MultiStatementDo;
 
 my $version_str = "0.5.1";
 	# Command line startup options

@@ -122,11 +122,16 @@ sub scrape {
 								next;
 							}
 						}
+						my $enclosures = [];
+						foreach my $enc ( $item->get('enclosure@url') ) {
+							push(@$enclosures, $enc);
+						}
 						push(
 							@{ $filters->{$filter}->{'matches'} },
 							{
 								'title'       => $item->title(),
 								'content'     => $item->description() . " " . $item->link(),
+								'enclosures'  => $enclosures,
 								'new_tv_last' => $episodeID
 							}
 						);
@@ -237,6 +242,11 @@ CONTENT: foreach my $count ( 0 .. $#{ $filter->{'matches'} } ) {
 			}
 		);
 		$finder->find( \$filter->{'matches'}->[$count]->{'content'} );
+
+		# handle enclosures
+		if ( $filter->{'matches'}->[$count]->{'enclosures'} ) {
+			push(@links, @{$filter->{'matches'}->[$count]->{'enclosures'}});
+		}
 
 		my $prevLink;
 		my $linksToProcess = [];

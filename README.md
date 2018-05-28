@@ -2,6 +2,11 @@
 
 jDlBot is an RSS feed and web scraper that finds and sends links to [jDownloader](http://www.jdownloader.org).
 
+## Not maintained any longer
+
+I switched to using [flexget](https://www.flexget.com/) together with jdownloaders folderwatch extension. In principle, this setup works very similar to jdlbot except that you [configure it vie a yml config file](https://github.com/crack00r/Flexget-Config) instead of a web interface. Flexget is also working on a web interface (which I am not using myself).
+Therefore, I am unfortunatley not maintaining jdlbot any longer.
+
 ## Installation
 
 ### Mac & Windows
